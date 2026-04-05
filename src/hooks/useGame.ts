@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { BattleLogEntry } from '../types/game';
-import { calculateTurnRegeneration } from '../utils/character';
+import { calculateTurnRegeneration, levelUp, canLevelUp } from '../utils/character';
 import { useGameState } from './useGameState';
 import { useBattle } from './useBattle';
 import { useShopInventory } from './useShopInventory';
@@ -32,14 +32,32 @@ export const useGame = () => {
 
   // Manual level up
   const manualLevelUp = useCallback(() => {
-    // This would be implemented with the character utilities
-    // For now, it's a placeholder
-    addBattleLogEntry({
-      message: 'Manual level up not yet implemented',
-      type: 'system',
-      timestamp: Date.now()
-    });
-  }, [addBattleLogEntry]);
+    if (!canLevelUp(gameState.player)) {
+      addBattleLogEntry({
+        message: 'Not enough EXP to level up!',
+        type: 'system',
+        timestamp: Date.now()
+      });
+      return;
+    }
+
+    let newPlayer = gameState.player;
+    
+    // Level up as many times as possible
+    while (canLevelUp(newPlayer)) {
+      newPlayer = levelUp(newPlayer);
+      addBattleLogEntry({
+        message: `Level Up! Now level ${newPlayer.level}!`,
+        type: 'system',
+        timestamp: Date.now()
+      });
+    }
+
+    setGameState(prev => ({
+      ...prev,
+      player: newPlayer
+    }));
+  }, [gameState.player, addBattleLogEntry, setGameState]);
 
   // Immediate save when player stats change
   useEffect(() => {
@@ -62,12 +80,24 @@ export const useGame = () => {
         
         // Stop EXP regeneration when at max level
         const expRegen = prev.player.level >= 99 ? 0 : Math.floor(1 * timeDiff); // 1 EXP per second
-        const newExp = prev.player.exp + expRegen;
+        let newPlayer = { ...prev.player, hp: newHp, mp: newMp, exp: prev.player.exp + expRegen };
         
-        if (newHp > prev.player.hp || newMp > prev.player.mp || newExp > prev.player.exp) {
+        // Check for level up from idle EXP gain
+        if (expRegen > 0 && canLevelUp(newPlayer)) {
+          while (canLevelUp(newPlayer)) {
+            newPlayer = levelUp(newPlayer);
+            addBattleLogEntry({
+              message: `Auto Level Up! Now level ${newPlayer.level}!`,
+              type: 'system',
+              timestamp: Date.now()
+            });
+          }
+        }
+        
+        if (newHp > prev.player.hp || newMp > prev.player.mp || newPlayer.exp > prev.player.exp) {
           return {
             ...prev,
-            player: { ...prev.player, hp: newHp, mp: newMp, exp: newExp },
+            player: newPlayer,
             lastRegenerationTime: Date.now()
           };
         }
@@ -77,7 +107,7 @@ export const useGame = () => {
     }, 5000); // Check every 5 seconds
 
     return () => clearInterval(regenerationInterval);
-  }, [gameState.inBattle, setGameState]);
+  }, [gameState.inBattle, setGameState, addBattleLogEntry]);
 
   return {
     gameState,
