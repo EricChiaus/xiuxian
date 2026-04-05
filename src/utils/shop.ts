@@ -9,14 +9,21 @@ export const generateShopItems = (playerLevel: number): ShopItem[] => {
     items.push(generateRandomEquipment(playerLevel));
   }
   
-  return items.map(item => ({
-    id: item.id,
-    name: item.name,
-    description: `${item.name} (Level ${item.level})`,
-    price: item.price,
-    type: 'equipment',
-    effect: `Power: ${item.bonus.pa || item.bonus.ma || 0}`
-  }));
+  return items.map(item => {
+    // Get the highest power for display
+    const highestPower = Object.entries(item.powers)
+      .filter(([_, value]) => value > 0)
+      .sort(([_, a], [__, b]) => b - a)[0];
+    
+    return {
+      id: item.id,
+      name: item.name,
+      description: `${item.name} (Level ${item.level})${highestPower ? ` - ${highestPower[0]} ${highestPower[1]}` : ''}`,
+      price: item.price,
+      type: 'equipment',
+      effect: `Power: ${item.bonus.pa || item.bonus.ma || 0}${highestPower ? ` (${highestPower[0]} ${highestPower[1]})` : ''}`
+    };
+  });
 };
 
 // Legacy function for backward compatibility

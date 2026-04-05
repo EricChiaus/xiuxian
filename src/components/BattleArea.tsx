@@ -1,6 +1,7 @@
 import React from 'react';
 import { Enemy, BattleLogEntry, BattleAction } from '../types/game';
 import EnemyTooltip from './EnemyTooltip';
+import { getPowerColor } from '../types/game';
 
 interface BattleAreaProps {
   inBattle: boolean;
@@ -53,6 +54,12 @@ const BattleArea: React.FC<BattleAreaProps> = ({
               const isSelected = enemy.id === selectedEnemyId;
               const isDefeated = enemy.hp <= 0;
               
+              // Get enemy's highest power for coloring
+              const highestPower = Object.entries(enemy.powers)
+                .filter(([_, value]) => value > 0)
+                .sort(([_, a], [__, b]) => b - a)[0];
+              const powerColor = highestPower ? getPowerColor(highestPower[0] as any) : '#8B0000';
+              
               return (
                 <div
                   key={enemy.id}
@@ -62,8 +69,12 @@ const BattleArea: React.FC<BattleAreaProps> = ({
                       ? 'border-red-600 bg-gradient-to-br from-red-50 to-orange-50 shadow-lg' 
                       : isDefeated
                       ? 'border-gray-400 bg-gray-100 opacity-60 cursor-not-allowed'
-                      : 'border-amber-600 bg-gradient-to-br from-amber-50 to-orange-50 hover:border-red-400 hover:shadow-md'
+                      : `border-amber-600 bg-gradient-to-br from-amber-50 to-orange-50 hover:border-red-400 hover:shadow-md`
                   } ${!isPlayerTurn && !isDefeated ? 'cursor-not-allowed opacity-75' : ''}`}
+                  style={{
+                    borderLeftColor: powerColor,
+                    boxShadow: powerColor ? `0 0 15px ${powerColor}40` : undefined
+                  }}
                 >
                   {/* Enemy Avatar */}
                   <div className="flex justify-center mb-3">

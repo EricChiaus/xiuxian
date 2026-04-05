@@ -45,6 +45,11 @@ export const generateEquipment = (id: string, type: 'weapon' | 'armor' | 'access
     powerResistance[secondaryPower] = generatePowerResistanceValue(level);
   }
   
+  // All equipment types get some resistance to their primary power
+  if (primaryPower) {
+    powerResistance[primaryPower] = (powerResistance[primaryPower] || 0) + generatePowerResistanceValue(level);
+  }
+  
   return {
     id,
     name: getEquipmentName(type, level, primaryPower),
