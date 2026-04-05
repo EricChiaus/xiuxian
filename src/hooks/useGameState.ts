@@ -94,7 +94,7 @@ export const useGameState = () => {
       offlineExp: 0,
       lastRegenerationTime: Date.now(),
       shopItems: generateShopItems(createInitialCharacter().level),
-      playerEquipment: []
+      playerEquipment: {}
     };
   });
 
@@ -116,7 +116,7 @@ export const useGameState = () => {
       offlineExp: 0,
       lastRegenerationTime: Date.now(),
       shopItems: generateShopItems(createInitialCharacter().level),
-      playerEquipment: []
+      playerEquipment: {}
     });
   }, []);
 

@@ -96,7 +96,7 @@ export interface GameState {
   lastRegenerationTime: number;
   offlineExp: number;
   shopItems: ShopItem[];
-  playerEquipment: Equipment[];
+  playerEquipment: { [itemId: string]: Equipment };
 }
 
 export interface BattleLogEntry {
