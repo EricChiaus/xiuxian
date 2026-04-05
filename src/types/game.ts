@@ -17,8 +17,8 @@ export interface Character {
     weapon?: string;
     armor?: string;
   }; // Currently equipped items
-  powers: Powers; // Elemental powers
-  powerResistance: PowerResistance; // Elemental resistance
+  elements: Elements; // Elemental powers
+  elementResistance: ElementResistance; // Elemental resistance
 }
 
 export interface Equipment {
@@ -34,8 +34,8 @@ export interface Equipment {
     maxHp?: number;
     maxMp?: number;
   };
-  powers: Partial<Powers>; // Elemental powers this equipment provides
-  powerResistance: Partial<PowerResistance>; // Elemental resistance this equipment provides
+  elements: Partial<Elements>; // Elemental powers this equipment provides
+  elementResistance: Partial<ElementResistance>; // Elemental resistance this equipment provides
   price: number;
   sellPrice: number;
 }
@@ -64,8 +64,8 @@ export interface Enemy {
   hasMagic: boolean;
   hasHeal: boolean;
   isElite?: boolean; // Elite enemy flag
-  powers: Partial<Powers>; // Enemy elemental powers
-  powerResistance: Partial<PowerResistance>; // Enemy elemental resistance
+  elements: Partial<Elements>; // Enemy elemental powers
+  elementResistance: Partial<ElementResistance>; // Enemy elemental resistance
 }
 
 export interface EnemyType {
@@ -165,10 +165,10 @@ export const getCultivatorRealmName = (level: number): string => {
   return '凡人';
 };
 
-// Power system types
-export type PowerType = 'metal' | 'wood' | 'water' | 'fire' | 'earth' | 'yin' | 'yang';
+// Element system types
+export type ElementType = 'metal' | 'wood' | 'water' | 'fire' | 'earth' | 'yin' | 'yang';
 
-export interface Powers {
+export interface Elements {
   metal: number;
   wood: number;
   water: number;
@@ -178,7 +178,7 @@ export interface Powers {
   yang: number;
 }
 
-export interface PowerResistance {
+export interface ElementResistance {
   metal: number;
   wood: number;
   water: number;
@@ -188,8 +188,8 @@ export interface PowerResistance {
   yang: number;
 }
 
-export const getPowerColor = (power: PowerType): string => {
-  switch (power) {
+export const getElementColor = (element: ElementType): string => {
+  switch (element) {
     case 'metal': return '#C0C0C0'; // Silver
     case 'wood': return '#228B22'; // Forest Green
     case 'water': return '#4169E1'; // Royal Blue
@@ -201,8 +201,8 @@ export const getPowerColor = (power: PowerType): string => {
   }
 };
 
-export const getPowerName = (power: PowerType): string => {
-  switch (power) {
+export const getElementName = (element: ElementType): string => {
+  switch (element) {
     case 'metal': return '金';
     case 'wood': return '木';
     case 'water': return '水';
@@ -215,29 +215,29 @@ export const getPowerName = (power: PowerType): string => {
 };
 
 // Element interaction rules (Chinese Wu Xing with Yin/Yang)
-export const getPowerMultiplier = (attackerPower: PowerType, defenderPower: PowerType): number => {
+export const getElementMultiplier = (attackerElement: ElementType, defenderElement: ElementType): number => {
   // Wu Xing (Five Elements) cycle: Wood → Earth → Metal → Water → Fire → Wood
   // Yin/Yang: Yin resists Yang, Yang resists Yin
   
-  if (attackerPower === defenderPower) return 1.0; // Same element, neutral
+  if (attackerElement === defenderElement) return 1.0; // Same element, neutral
   
   // Wu Xing interactions
-  if (attackerPower === 'wood' && defenderPower === 'earth') return 1.5; // Wood overcomes Earth
-  if (attackerPower === 'earth' && defenderPower === 'metal') return 1.5; // Earth overcomes Metal
-  if (attackerPower === 'metal' && defenderPower === 'water') return 1.5; // Metal overcomes Water
-  if (attackerPower === 'water' && defenderPower === 'fire') return 1.5; // Water overcomes Fire
-  if (attackerPower === 'fire' && defenderPower === 'wood') return 1.5; // Fire overcomes Wood
+  if (attackerElement === 'wood' && defenderElement === 'earth') return 1.5; // Wood overcomes Earth
+  if (attackerElement === 'earth' && defenderElement === 'metal') return 1.5; // Earth overcomes Metal
+  if (attackerElement === 'metal' && defenderElement === 'water') return 1.5; // Metal overcomes Water
+  if (attackerElement === 'water' && defenderElement === 'fire') return 1.5; // Water overcomes Fire
+  if (attackerElement === 'fire' && defenderElement === 'wood') return 1.5; // Fire overcomes Wood
   
   // Reverse cycle (weaker against)
-  if (attackerPower === 'earth' && defenderPower === 'wood') return 0.7; // Earth is weak against Wood
-  if (attackerPower === 'metal' && defenderPower === 'earth') return 0.7; // Metal is weak against Earth
-  if (attackerPower === 'water' && defenderPower === 'metal') return 0.7; // Water is weak against Metal
-  if (attackerPower === 'fire' && defenderPower === 'water') return 0.7; // Fire is weak against Water
-  if (attackerPower === 'wood' && defenderPower === 'fire') return 0.7; // Wood is weak against Fire
+  if (attackerElement === 'earth' && defenderElement === 'wood') return 0.7; // Earth is weak against Wood
+  if (attackerElement === 'metal' && defenderElement === 'earth') return 0.7; // Metal is weak against Earth
+  if (attackerElement === 'water' && defenderElement === 'metal') return 0.7; // Water is weak against Metal
+  if (attackerElement === 'fire' && defenderElement === 'water') return 0.7; // Fire is weak against Water
+  if (attackerElement === 'wood' && defenderElement === 'fire') return 0.7; // Wood is weak against Fire
   
   // Yin/Yang interactions
-  if (attackerPower === 'yin' && defenderPower === 'yang') return 1.3; // Yin overcomes Yang
-  if (attackerPower === 'yang' && defenderPower === 'yin') return 1.3; // Yang overcomes Yin
+  if (attackerElement === 'yin' && defenderElement === 'yang') return 1.3; // Yin overcomes Yang
+  if (attackerElement === 'yang' && defenderElement === 'yin') return 1.3; // Yang overcomes Yin
   
   return 1.0; // Neutral interaction
 };
