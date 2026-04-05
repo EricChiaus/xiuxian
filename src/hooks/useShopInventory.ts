@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { BattleLogEntry, GameState, Equipment, Character } from '../types/game';
+import { BattleLogEntry, GameState, Equipment, Character, ShopItem } from '../types/game';
 import { generateShopItems } from '../utils/shop';
 import { generateRandomEquipment, calculateCharacterStats, generateEquipment } from '../utils/equipment';
 import { generateEquipment as generateShopEquipment } from '../utils/shop';
@@ -22,8 +22,15 @@ export const useShopInventory = (
   gameState: GameState,
   setGameState: React.Dispatch<React.SetStateAction<GameState>>,
   addBattleLogEntry: (entry: BattleLogEntry) => void
-) => {
-  // Generate all equipment data for inventory display
+): {
+  buyItem: (itemId: string) => void,
+  sellItem: (itemId: string) => void,
+  equipItem: (itemId: string) => void,
+  unequipItem: (slot: keyof Character['equippedItems']) => void,
+  refreshShop: () => void,
+  getAllEquipment: () => Equipment[],
+  getAvailableShopItems: () => ShopItem[]
+} => {
   const getAllEquipment = useCallback(() => {
     const allEquipment: Equipment[] = [];
     
@@ -118,7 +125,7 @@ export const useShopInventory = (
     });
   }, [gameState.player.level, setGameState, addBattleLogEntry]);
 
-  const buyItem = useCallback((itemId: string) => {
+  const buyItem = useCallback((itemId: string): void => {
     const shopItem = gameState.shopItems.find(item => item.id === itemId);
     if (!shopItem || gameState.player.coin < shopItem.price) return;
 
@@ -283,6 +290,15 @@ export const useShopInventory = (
     equipItem,
     unequipItem,
     refreshShop,
-    getAllEquipment
+    getAllEquipment,
+    getAvailableShopItems: () => {
+      // Filter out items that are already in inventory or equipped
+      const purchasedItemIds = new Set([
+        ...gameState.player.inventory,
+        ...Object.values(gameState.player.equippedItems).filter(Boolean)
+      ]);
+      
+      return gameState.shopItems.filter(shopItem => !purchasedItemIds.has(shopItem.id));
+    }
   };
 };
