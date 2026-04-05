@@ -49,7 +49,7 @@ export const useGame = () => {
     };
   });
 
-  // Auto-save every 30 seconds or when player stats change
+  // Auto-save every 30 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       saveGame({
@@ -59,6 +59,14 @@ export const useGame = () => {
     }, 30000);
 
     return () => clearInterval(interval);
+  }, [gameState.player, gameState.player.inventory, gameState.playerEquipment, gameState.player.level, gameState.player.coin, gameState.player.exp, gameState.player.hp, gameState.player.mp, gameState.player.maxHp, gameState.player.maxMp, gameState.player.pa, gameState.player.ma, gameState.player.pd, gameState.player.md, gameState.player.expToNext]);
+
+  // Immediate save when player stats change
+  useEffect(() => {
+    saveGame({
+      player: gameState.player,
+      lastSaveTime: Date.now()
+    });
   }, [gameState.player, gameState.player.inventory, gameState.playerEquipment, gameState.player.level, gameState.player.coin, gameState.player.exp, gameState.player.hp, gameState.player.mp, gameState.player.maxHp, gameState.player.maxMp, gameState.player.pa, gameState.player.ma, gameState.player.pd, gameState.player.md, gameState.player.expToNext]);
 
   // HP/MP regeneration when idle (not in battle)
