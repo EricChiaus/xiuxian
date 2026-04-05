@@ -8,7 +8,6 @@ export const generateShopItems = (): ShopItem[] => {
       name: 'Iron Sword',
       description: 'A basic sword with +5 PA',
       price: 100,
-      sellPrice: 50,
       type: 'equipment',
       effect: '+5 Physical Attack'
     },
@@ -17,7 +16,6 @@ export const generateShopItems = (): ShopItem[] => {
       name: 'Steel Sword',
       description: 'A sturdy sword with +10 PA',
       price: 250,
-      sellPrice: 125,
       type: 'equipment',
       effect: '+10 Physical Attack'
     },
@@ -26,7 +24,6 @@ export const generateShopItems = (): ShopItem[] => {
       name: 'Wooden Staff',
       description: 'A basic staff with +5 MA',
       price: 80,
-      sellPrice: 40,
       type: 'equipment',
       effect: '+5 Magic Attack'
     },
@@ -35,7 +32,6 @@ export const generateShopItems = (): ShopItem[] => {
       name: 'Crystal Staff',
       description: 'A powerful staff with +12 MA',
       price: 200,
-      sellPrice: 100,
       type: 'equipment',
       effect: '+12 Magic Attack'
     },
@@ -46,7 +42,6 @@ export const generateShopItems = (): ShopItem[] => {
       name: 'Leather Armor',
       description: 'Light armor with +3 PD',
       price: 120,
-      sellPrice: 60,
       type: 'equipment',
       effect: '+3 Physical Defense'
     },
@@ -55,7 +50,6 @@ export const generateShopItems = (): ShopItem[] => {
       name: 'Iron Armor',
       description: 'Heavy armor with +6 PD',
       price: 300,
-      sellPrice: 150,
       type: 'equipment',
       effect: '+6 Physical Defense'
     },
@@ -64,7 +58,6 @@ export const generateShopItems = (): ShopItem[] => {
       name: 'Robe',
       description: 'Magic robe with +4 MD',
       price: 150,
-      sellPrice: 75,
       type: 'equipment',
       effect: '+4 Magic Defense'
     },
@@ -73,7 +66,6 @@ export const generateShopItems = (): ShopItem[] => {
       name: 'Enchanted Robe',
       description: 'Powerful robe with +8 MD',
       price: 350,
-      sellPrice: 175,
       type: 'equipment',
       effect: '+8 Magic Defense'
     },
@@ -84,7 +76,6 @@ export const generateShopItems = (): ShopItem[] => {
       name: 'Health Potion',
       description: 'Restores 50 HP',
       price: 30,
-      sellPrice: 15,
       type: 'consumable',
       effect: 'Restore 50 HP'
     },
@@ -93,7 +84,6 @@ export const generateShopItems = (): ShopItem[] => {
       name: 'Mana Potion',
       description: 'Restores 30 MP',
       price: 25,
-      sellPrice: 12,
       type: 'consumable',
       effect: 'Restore 30 MP'
     },
@@ -102,7 +92,6 @@ export const generateShopItems = (): ShopItem[] => {
       name: 'Full Heal Potion',
       description: 'Fully restores HP and MP',
       price: 100,
-      sellPrice: 50,
       type: 'consumable',
       effect: 'Full HP/MP restore'
     }

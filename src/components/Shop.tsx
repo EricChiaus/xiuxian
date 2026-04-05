@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShopItem, Equipment } from '../types/game';
+import { ShopItem } from '../types/game';
 
 interface ShopProps {
   shopItems: ShopItem[];
@@ -29,7 +29,6 @@ const Shop: React.FC<ShopProps> = ({ shopItems, playerCoins, onBuyItem }) => {
               <div className="flex justify-between items-center">
                 <div>
                   <span className="text-lg font-bold text-blue-600">{item.price} 🪙</span>
-                  <span className="text-xs text-gray-500 line-through">{item.sellPrice} 🪙</span>
                 </div>
               </div>
               
