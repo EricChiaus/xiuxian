@@ -21,15 +21,16 @@ const getEquipmentTypeFromChineseName = (chineseName: string): Equipment['type']
 export const useShopInventory = (
   gameState: GameState,
   setGameState: React.Dispatch<React.SetStateAction<GameState>>,
-  addBattleLogEntry: (entry: BattleLogEntry) => void
+  addBattleLogEntry: (entry: { message: string; type: 'player' | 'enemy' | 'system'; timestamp: number }) => void
 ): {
-  buyItem: (itemId: string) => void,
-  sellItem: (itemId: string) => void,
-  equipItem: (itemId: string) => void,
-  unequipItem: (slot: keyof Character['equippedItems']) => void,
-  refreshShop: () => void,
-  getAllEquipment: () => Equipment[],
-  getAvailableShopItems: () => ShopItem[]
+  buyItem: (itemId: string) => void;
+  sellItem: (itemId: string) => void;
+  equipItem: (itemId: string) => void;
+  unequipItem: (slot: "weapon" | "armor" | "accessory" | "helmet" | "boots" | "ring" | "necklace") => void;
+  refreshShop: () => void;
+  getAllEquipment: () => Equipment[];
+  getInventoryEquipment: () => Equipment[];
+  getAvailableShopItems: () => ShopItem[];
 } => {
   const getAllEquipment = useCallback(() => {
     const allEquipment: Equipment[] = [];
@@ -75,6 +76,24 @@ export const useShopInventory = (
     
     return allEquipment;
   }, [gameState.shopItems, gameState.playerEquipment, gameState.player.equippedItems, gameState.player.level]);
+
+  // NEW FUNCTION: Get only inventory equipment (for inventory display)
+  const getInventoryEquipment = useCallback(() => {
+    const inventoryEquipment: Equipment[] = [];
+    
+    // Only get equipment that's actually in the player's inventory
+    gameState.player.inventory.forEach(itemId => {
+      const equipmentData = gameState.playerEquipment[itemId];
+      if (equipmentData) {
+        inventoryEquipment.push({
+          ...equipmentData,
+          id: itemId
+        });
+      }
+    });
+    
+    return inventoryEquipment;
+  }, [gameState.player.inventory, gameState.playerEquipment]);
 
   // Helper function to determine equipment type from ID
   const getEquipmentTypeFromId = (itemId: string, allEquipment: Equipment[]): keyof Character['equippedItems'] | null => {
@@ -291,6 +310,7 @@ export const useShopInventory = (
     unequipItem,
     refreshShop,
     getAllEquipment,
+    getInventoryEquipment,
     getAvailableShopItems: () => {
       // Filter out items that are already in inventory or equipped
       const purchasedItemIds = new Set([
