@@ -13,12 +13,12 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ player, onLevelUp, canL
   const expPercent = (player.exp / player.expToNext) * 100;
 
   const avatarImages: Record<string, string> = {
-    'male_cultivator_1': 'https://picsum.photos/seed/young-cultivator-male/200/200.jpg',
-    'male_cultivator_2': 'https://picsum.photos/seed/middle-daoist-male/200/200.jpg',
-    'male_cultivator_3': 'https://picsum.photos/seed/elder-immortal-male/200/200.jpg',
-    'female_cultivator_1': 'https://picsum.photos/seed/young-cultivator-female/200/200.jpg',
-    'female_cultivator_2': 'https://picsum.photos/seed/fairy-female/200/200.jpg',
-    'female_cultivator_3': 'https://picsum.photos/seed/female-master/200/200.jpg'
+    'male_cultivator_1': 'https://api.dicebear.com/7.x/avataaars/svg?seed=young-cultivator&backgroundColor=b6e3f4',
+    'male_cultivator_2': 'https://api.dicebear.com/7.x/avataaars/svg?seed=taoist-master&backgroundColor=c0aede',
+    'male_cultivator_3': 'https://api.dicebear.com/7.x/avataaars/svg?seed=immortal-master&backgroundColor=d1d4f9',
+    'female_cultivator_1': 'https://api.dicebear.com/7.x/avataaars/svg?seed=female-cultivator&backgroundColor=ffdfbf',
+    'female_cultivator_2': 'https://api.dicebear.com/7.x/avataaars/svg?seed=fairy-immortal&backgroundColor=ffd5dc',
+    'female_cultivator_3': 'https://api.dicebear.com/7.x/avataaars/svg?seed=female-master&backgroundColor=ffdfd2'
   };
 
   const renderAvatar = () => {

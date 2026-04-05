@@ -23,42 +23,42 @@ const Profile: React.FC<ProfileProps> = ({ character, currentAvatar, onAvatarCha
       name: '年轻修士',
       gender: 'male',
       description: '朝气蓬勃的年轻修士',
-      imageUrl: 'https://picsum.photos/seed/young-cultivator-male/200/200.jpg'
+      imageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=young-cultivator&backgroundColor=b6e3f4'
     },
     {
       id: 'male_cultivator_2', 
       name: '中年道长',
       gender: 'male',
       description: '稳重的中年道长',
-      imageUrl: 'https://picsum.photos/seed/middle-daoist-male/200/200.jpg'
+      imageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=taoist-master&backgroundColor=c0aede'
     },
     {
       id: 'male_cultivator_3',
       name: '老神仙',
       gender: 'male', 
       description: '仙风道骨的老神仙',
-      imageUrl: 'https://picsum.photos/seed/elder-immortal-male/200/200.jpg'
+      imageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=immortal-master&backgroundColor=d1d4f9'
     },
     {
       id: 'female_cultivator_1',
       name: '年轻女修',
       gender: 'female',
       description: '清秀可人的年轻女修',
-      imageUrl: 'https://picsum.photos/seed/young-cultivator-female/200/200.jpg'
+      imageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=female-cultivator&backgroundColor=ffdfbf'
     },
     {
       id: 'female_cultivator_2',
       name: '仙女',
       gender: 'female',
       description: '飘逸出尘的仙女',
-      imageUrl: 'https://picsum.photos/seed/fairy-female/200/200.jpg'
+      imageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=fairy-immortal&backgroundColor=ffd5dc'
     },
     {
       id: 'female_cultivator_3',
       name: '女道尊',
       gender: 'female',
       description: '威严的女道尊',
-      imageUrl: 'https://picsum.photos/seed/female-master/200/200.jpg'
+      imageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=female-master&backgroundColor=ffdfd2'
     }
   ];
 
@@ -71,29 +71,44 @@ const Profile: React.FC<ProfileProps> = ({ character, currentAvatar, onAvatarCha
         style={{ 
           transform: `scale(${scale})`,
           borderColor: isSelected ? '#FFD700' : '#8B4513',
-          boxShadow: isSelected ? '0 0 20px rgba(255, 215, 0, 0.5)' : '0 4px 6px rgba(0, 0, 0, 0.1)'
+          boxShadow: isSelected ? '0 0 20px rgba(255, 215, 0, 0.5)' : '0 4px 6px rgba(0, 0, 0, 0.1)',
+          background: `linear-gradient(135deg, ${avatar.gender === 'male' ? '#2E7D32' : '#FF69B4'}, ${avatar.gender === 'male' ? '#1B5E20' : '#C71585'})`
         }}
       >
-        {/* Avatar Image */}
-        <img 
-          src={avatar.imageUrl} 
-          alt={avatar.name}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            // Fallback to a colored div if image fails to load
-            const target = e.target as HTMLImageElement;
-            target.style.display = 'none';
-            const parent = target.parentElement;
-            if (parent) {
-              parent.innerHTML = `
-                <div class="w-full h-full flex items-center justify-center text-white font-bold text-2xl" 
-                     style="background: ${avatar.gender === 'male' ? 'linear-gradient(135deg, #2E7D32, #1B5E20)' : 'linear-gradient(135deg, #FF69B4, #C71585)'}">
-                  ${avatar.name.charAt(0)}
-                </div>
-              `;
-            }
-          }}
-        />
+        {/* Avatar Image with cultivation theme */}
+        <div className="relative w-full h-full">
+          <img 
+            src={avatar.imageUrl} 
+            alt={avatar.name}
+            className="w-full h-full object-cover"
+            style={{ mixBlendMode: 'multiply', opacity: 0.9 }}
+            onError={(e) => {
+              // Fallback to a themed div if image fails to load
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+              const parent = target.parentElement;
+              if (parent) {
+                parent.innerHTML = `
+                  <div class="w-full h-full flex items-center justify-center text-white font-bold text-2xl" 
+                       style="background: ${avatar.gender === 'male' ? 'linear-gradient(135deg, #2E7D32, #1B5E20)' : 'linear-gradient(135deg, #FF69B4, #C71585)'}">
+                    ${avatar.name.charAt(0)}
+                  </div>
+                `;
+              }
+            }}
+          />
+          
+          {/* Cultivation-themed overlay */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="text-white text-opacity-20 text-4xl font-bold" style={{ textShadow: '0 0 10px rgba(255,255,255,0.5)' }}>
+              {avatar.gender === 'male' ? '☯' : '✦'}
+            </div>
+          </div>
+          
+          {/* Energy aura effect */}
+          <div className="absolute inset-0 rounded-full border-2 border-yellow-400 opacity-30 animate-pulse pointer-events-none"></div>
+          <div className="absolute inset-0 rounded-full border-2 border-blue-400 opacity-20 animate-pulse pointer-events-none" style={{ animationDelay: '1s' }}></div>
+        </div>
         
         {/* Selection indicator */}
         {isSelected && (
@@ -110,6 +125,11 @@ const Profile: React.FC<ProfileProps> = ({ character, currentAvatar, onAvatarCha
         {/* Cultivation level indicator */}
         <div className="absolute top-0 left-0 bg-gradient-to-r from-yellow-600 to-yellow-500 text-black text-xs px-1 py-0.5 rounded-br font-bold">
           {avatar.id.includes('1') ? '初' : avatar.id.includes('2') ? '中' : '高'}
+        </div>
+        
+        {/* Cultivation type indicator */}
+        <div className="absolute top-2 left-2 text-white text-xs opacity-60 font-bold">
+          {avatar.id.includes('cultivator') ? '修' : avatar.id.includes('taoist') ? '道' : '仙'}
         </div>
       </div>
     );
