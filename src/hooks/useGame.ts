@@ -49,18 +49,6 @@ export const useGame = () => {
     };
   });
 
-  // Auto-save every 30 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      saveGame({
-        player: gameState.player,
-        lastSaveTime: gameState.lastSaveTime
-      });
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [gameState.player, gameState.player.inventory, gameState.playerEquipment, gameState.player.level, gameState.player.coin, gameState.player.exp, gameState.player.hp, gameState.player.mp, gameState.player.maxHp, gameState.player.maxMp, gameState.player.pa, gameState.player.ma, gameState.player.pd, gameState.player.md, gameState.player.expToNext]);
-
   // Immediate save when player stats change
   useEffect(() => {
     saveGame({
