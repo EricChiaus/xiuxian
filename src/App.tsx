@@ -2,13 +2,11 @@ import React, { useState } from 'react';
 import { useGame } from './hooks/useGame';
 import CharacterPanel from './components/CharacterPanel';
 import BattleArea from './components/BattleArea';
-import GameInfo from './components/GameInfo';
-import OfflineExpNotification from './components/OfflineExpNotification';
 import Shop from './components/Shop';
 import Inventory from './components/Inventory';
 
 function App() {
-  const { gameState, startBattle, performAction, manualLevelUp, resetGame } = useGame();
+  const { gameState, startBattle, performAction, manualLevelUp, resetGame, buyItem, sellItem, useItem } = useGame();
   const [showShop, setShowShop] = useState(false);
   const [showInventory, setShowInventory] = useState(false);
 
@@ -20,11 +18,6 @@ function App() {
           <h1 className="text-5xl font-bold text-gray-800 mb-2">⚔️ Simple RPG Game ⚔️</h1>
           <p className="text-gray-600">Battle enemies, level up, and manage your equipment!</p>
         </header>
-
-        {/* Offline EXP Notification */}
-        {gameState.offlineExp > 0 && (
-          <OfflineExpNotification amount={gameState.offlineExp} />
-        )}
 
         {/* Game Info Bar */}
         <div className="flex justify-between items-center bg-gray-100 rounded-xl p-4 mb-6">
@@ -89,7 +82,7 @@ function App() {
               <Shop
                 shopItems={gameState.shopItems}
                 playerCoins={gameState.player.coin}
-                onBuyItem={gameState.buyItem}
+                onBuyItem={buyItem}
               />
             </div>
           </div>
@@ -110,8 +103,8 @@ function App() {
               </div>
               <Inventory
                 character={gameState.player}
-                onUseItem={gameState.useItem}
-                onSellItem={gameState.sellItem}
+                onUseItem={useItem}
+                onSellItem={sellItem}
               />
             </div>
           </div>
@@ -119,7 +112,12 @@ function App() {
 
         {/* Reset Button */}
         <div className="text-center mt-6">
-          <GameInfo onResetGame={resetGame} />
+          <button
+            onClick={resetGame}
+            className="px-6 py-3 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 transition-colors"
+          >
+            🔄 Reset Game
+          </button>
         </div>
       </div>
     </div>

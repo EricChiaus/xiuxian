@@ -8,11 +8,12 @@ export const createInitialCharacter = (): Character => ({
   pa: 10,  // Physical Attack
   ma: 8,   // Magic Attack
   pd: 5,   // Physical Defense
-  md: 4,   // Magic Defense
+  md: 5,   // Magic Defense
   level: 1,
   exp: 0,
   expToNext: 100,
-  coin: 0
+  coin: 0,
+  inventory: []
 });
 
 export const calculateStats = (character: Character): Character => {

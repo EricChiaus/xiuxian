@@ -26,10 +26,11 @@ describe('Character Utils', () => {
       expect(character.pa).toBe(10);
       expect(character.ma).toBe(8);
       expect(character.pd).toBe(5);
-      expect(character.md).toBe(4);
+      expect(character.md).toBe(5);
       expect(character.exp).toBe(0);
       expect(character.expToNext).toBe(100);
       expect(character.coin).toBe(0);
+      expect(character.inventory).toEqual([]); // Add inventory check
     });
   });
 
