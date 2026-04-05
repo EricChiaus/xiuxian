@@ -8,13 +8,14 @@ export const enemyTypes: EnemyType[] = [
   { name: "骷髅怪", baseHp: 55, basePa: 10, basePd: 5, expReward: 22, coinReward: 11 }
 ];
 
-export const generateEnemy = (playerLevel: number): Enemy => {
+export const generateEnemy = (playerLevel: number, id?: string): Enemy => {
   const enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
   const levelVariation = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
   const enemyLevel = Math.max(1, playerLevel + levelVariation);
   const levelMultiplier = 1 + (enemyLevel - 1) * 0.1;
   
   return {
+    id: id || `enemy_${Date.now()}_${Math.random()}`,
     name: enemyType.name,
     level: enemyLevel,
     hp: Math.floor(enemyType.baseHp * levelMultiplier),
@@ -28,6 +29,14 @@ export const generateEnemy = (playerLevel: number): Enemy => {
     hasMagic: Math.random() > 0.5,
     hasHeal: Math.random() > 0.8
   };
+};
+
+export const generateMultipleEnemies = (playerLevel: number, count: number = 2): Enemy[] => {
+  const enemies: Enemy[] = [];
+  for (let i = 0; i < count; i++) {
+    enemies.push(generateEnemy(playerLevel, `enemy_${i}`));
+  }
+  return enemies;
 };
 
 export const chooseEnemyAction = (enemy: Enemy): 'attack' | 'magic' | 'heal' => {

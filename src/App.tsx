@@ -4,11 +4,13 @@ import CharacterPanel from './components/CharacterPanel';
 import BattleArea from './components/BattleArea';
 import Shop from './components/Shop';
 import Inventory from './components/Inventory';
+import Profile from './components/Profile';
 
 function App() {
-  const { gameState, startBattle, performAction, manualLevelUp, resetGame, buyItem, sellItem, useItem } = useGame();
+  const { gameState, setGameState, startBattle, performAction, manualLevelUp, resetGame, buyItem, sellItem, useItem, selectEnemy } = useGame();
   const [showShop, setShowShop] = useState(false);
   const [showInventory, setShowInventory] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-900 via-amber-800 to-yellow-900 flex items-center justify-center p-4 relative overflow-hidden">
@@ -40,6 +42,12 @@ function App() {
           </div>
           <div className="flex gap-4">
             <button
+              onClick={() => setShowProfile(true)}
+              className="px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white font-bold rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all transform hover:scale-105 border-2 border-purple-800"
+            >
+              👤 修仙档案
+            </button>
+            <button
               onClick={() => setShowShop(true)}
               className="px-4 py-2 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold rounded-lg hover:from-amber-700 hover:to-orange-700 transition-all transform hover:scale-105 border-2 border-amber-800"
             >
@@ -49,7 +57,7 @@ function App() {
               onClick={() => setShowInventory(true)}
               className="px-4 py-2 bg-gradient-to-r from-red-600 to-pink-600 text-white font-bold rounded-lg hover:from-red-700 hover:to-pink-700 transition-all transform hover:scale-105 border-2 border-red-800"
             >
-              � 藏宝阁
+              📜 藏宝阁
             </button>
           </div>
         </div>
@@ -70,9 +78,13 @@ function App() {
             <BattleArea
               inBattle={gameState.inBattle}
               currentEnemy={gameState.currentEnemy}
+              enemies={gameState.enemies}
+              selectedEnemyId={gameState.selectedEnemyId}
+              isPlayerTurn={gameState.isPlayerTurn}
               battleLog={gameState.battleLog}
               onStartBattle={startBattle}
               onAction={performAction}
+              onSelectEnemy={selectEnemy}
             />
           </div>
         </div>
@@ -102,7 +114,7 @@ function App() {
         {/* Inventory Modal */}
         {showInventory && (
           <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-            <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 max-w-4xl max-h-[80vh] overflow-y-auto border-4 border-red-800 shadow-2xl">
+            <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 max-w-6xl max-h-[90vh] overflow-y-auto border-4 border-red-800 shadow-2xl">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-3xl font-bold text-red-900" style={{ fontFamily: 'serif' }}>📜 藏宝阁</h2>
                 <button
@@ -119,6 +131,25 @@ function App() {
               />
             </div>
           </div>
+        )}
+
+        {/* Profile Modal */}
+        {showProfile && (
+          <Profile
+            character={gameState.player}
+            currentAvatar={gameState.player.avatar}
+            onAvatarChange={(avatarId) => {
+              // Update avatar in game state
+              setGameState((prev: any) => ({
+                ...prev,
+                player: {
+                  ...prev.player,
+                  avatar: avatarId
+                }
+              }));
+            }}
+            onClose={() => setShowProfile(false)}
+          />
         )}
 
         {/* Reset Button */}

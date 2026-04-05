@@ -11,7 +11,12 @@ export interface Character {
   exp: number;
   expToNext: number;
   coin: number;
-  inventory: string[]; // New: Simple inventory system
+  inventory: string[]; // Simple inventory system
+  avatar: string; // Player's chosen avatar
+  equippedItems: {
+    weapon?: string;
+    armor?: string;
+  }; // Currently equipped items
 }
 
 export interface Equipment {
@@ -40,6 +45,7 @@ export interface ShopItem {
 }
 
 export interface Enemy {
+  id: string; // Add unique ID for tracking
   name: string;
   level: number;
   hp: number;
@@ -66,13 +72,16 @@ export interface EnemyType {
 export interface GameState {
   player: Character;
   currentEnemy: Enemy | null;
+  enemies: Enemy[]; // Multiple enemies in battle
+  selectedEnemyId: string | null; // Currently selected enemy
   inBattle: boolean;
-  lastSaveTime: number;
+  isPlayerTurn: boolean; // Track whose turn it is
   battleLog: BattleLogEntry[];
-  offlineExp: number;
+  lastSaveTime: number;
   lastRegenerationTime: number;
-  shopItems: ShopItem[]; // New: Shop inventory
-  playerEquipment: Equipment[]; // New: Player equipment
+  offlineExp: number;
+  shopItems: ShopItem[];
+  playerEquipment: Equipment[];
 }
 
 export interface BattleLogEntry {

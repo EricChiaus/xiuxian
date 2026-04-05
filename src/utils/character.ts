@@ -13,7 +13,9 @@ export const createInitialCharacter = (): Character => ({
   exp: 0,
   expToNext: 100,
   coin: 0,
-  inventory: []
+  inventory: [],
+  avatar: 'male_cultivator_1', // Default avatar
+  equippedItems: {} // No items equipped initially
 });
 
 export const calculateStats = (character: Character): Character => {

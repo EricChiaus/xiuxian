@@ -4,17 +4,25 @@ import { Enemy, BattleLogEntry, BattleAction } from '../types/game';
 interface BattleAreaProps {
   inBattle: boolean;
   currentEnemy: Enemy | null;
+  enemies: Enemy[];
+  selectedEnemyId: string | null;
+  isPlayerTurn: boolean;
   battleLog: BattleLogEntry[];
   onStartBattle: () => void;
   onAction: (action: BattleAction) => void;
+  onSelectEnemy: (enemyId: string) => void;
 }
 
 const BattleArea: React.FC<BattleAreaProps> = ({ 
   inBattle, 
   currentEnemy, 
+  enemies,
+  selectedEnemyId,
+  isPlayerTurn,
   battleLog, 
   onStartBattle, 
-  onAction 
+  onAction,
+  onSelectEnemy
 }) => {
   const getLogEntryClass = (type: string) => {
     switch (type) {
@@ -30,56 +38,89 @@ const BattleArea: React.FC<BattleAreaProps> = ({
   };
 
   if (inBattle && currentEnemy) {
-    const hpPercent = (currentEnemy.hp / currentEnemy.maxHp) * 100;
-
     return (
       <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl p-6 shadow-lg border-2 border-red-700">
         <h3 className="text-xl font-bold text-center mb-4 text-red-900" style={{ fontFamily: 'serif' }}>⚔️ 战斗 ⚔️</h3>
         
-        {/* Enemy Display */}
-        <div className="text-center mb-6">
-          <div className="relative inline-block">
-            <svg className="w-20 h-20 mx-auto mb-3" viewBox="0 0 100 100">
-              {/* Demon body */}
-              <ellipse cx="50" cy="60" rx="25" ry="20" fill="#8B0000"/>
-              {/* Demon head */}
-              <circle cx="50" cy="35" r="18" fill="#8B0000"/>
-              {/* Horns */}
-              <path d="M 35 25 L 32 15 L 38 20" fill="#654321" stroke="#654321" strokeWidth="1"/>
-              <path d="M 65 25 L 68 15 L 62 20" fill="#654321" stroke="#654321" strokeWidth="1"/>
-              {/* Evil eyes - red glow */}
-              <circle cx="42" cy="32" r="3" fill="#FF0000"/>
-              <circle cx="58" cy="32" r="3" fill="#FF0000"/>
-              <circle cx="42" cy="32" r="1" fill="#FFFF00"/>
-              <circle cx="58" cy="32" r="1" fill="#FFFF00"/>
-              {/* Evil grin */}
-              <path d="M 35 42 Q 50 48 65 42" stroke="#FF0000" strokeWidth="2" fill="none"/>
-              {/* Dark aura */}
-              <circle cx="50" cy="50" r="35" fill="none" stroke="#8B0000" strokeWidth="1" opacity="0.5"/>
-              <circle cx="50" cy="50" r="40" fill="none" stroke="#8B0000" strokeWidth="0.5" opacity="0.3"/>
-            </svg>
-            {/* Enemy level indicator */}
-            <div className="absolute -top-2 -right-2 bg-red-800 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold">
-              {currentEnemy.level}
-            </div>
-          </div>
-          <div className="text-lg font-bold text-red-900 mb-2" style={{ fontFamily: 'serif' }}>
-            👹 {currentEnemy.name}
-          </div>
+        {/* Enemy Display - Multiple Enemies */}
+        <div className="space-y-4">
+          <h3 className="text-xl font-bold text-center text-red-900 mb-4" style={{ fontFamily: 'serif' }}>👹 妖魔群</h3>
           
-          {/* Enemy HP Bar */}
-          <div className="mb-4">
-            <div className="text-sm text-amber-800 font-semibold mb-1">妖魔生命</div>
-            <div className="w-full bg-amber-200 rounded-full h-5 relative border border-amber-600">
-              <div 
-                className="bg-gradient-to-r from-red-600 to-red-700 h-5 rounded-full transition-all duration-300"
-                style={{ width: `${hpPercent}%` }}
-              >
-                <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white">
-                  {currentEnemy.hp}/{currentEnemy.maxHp}
-                </span>
-              </div>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {enemies.map((enemy) => {
+              const hpPercent = (enemy.hp / enemy.maxHp) * 100;
+              const isSelected = enemy.id === selectedEnemyId;
+              const isDefeated = enemy.hp <= 0;
+              
+              return (
+                <div
+                  key={enemy.id}
+                  onClick={() => isPlayerTurn && !isDefeated && onSelectEnemy(enemy.id)}
+                  className={`relative p-4 rounded-xl border-2 transition-all cursor-pointer ${
+                    isSelected 
+                      ? 'border-red-600 bg-gradient-to-br from-red-50 to-orange-50 shadow-lg' 
+                      : isDefeated
+                      ? 'border-gray-400 bg-gray-100 opacity-60 cursor-not-allowed'
+                      : 'border-amber-600 bg-gradient-to-br from-amber-50 to-orange-50 hover:border-red-400 hover:shadow-md'
+                  } ${!isPlayerTurn && !isDefeated ? 'cursor-not-allowed opacity-75' : ''}`}
+                >
+                  {/* Enemy Avatar */}
+                  <div className="flex justify-center mb-3">
+                    <div className="relative">
+                      <svg className="w-16 h-16" viewBox="0 0 100 100">
+                        {/* Demon body */}
+                        <ellipse cx="50" cy="60" rx="25" ry="20" fill="#8B0000"/>
+                        <ellipse cx="50" cy="60" rx="20" ry="15" fill="#DC143C" opacity="0.7"/>
+                        {/* Demon head */}
+                        <circle cx="50" cy="35" r="18" fill="#8B0000"/>
+                        {/* Horns */}
+                        <path d="M 35 25 L 30 15 L 35 20" stroke="#654321" strokeWidth="3" fill="none"/>
+                        <path d="M 65 25 L 70 15 L 65 20" stroke="#654321" strokeWidth="3" fill="none"/>
+                        {/* Evil eyes */}
+                        <circle cx="42" cy="32" r="3" fill="#FF0000"/>
+                        <circle cx="58" cy="32" r="3" fill="#FF0000"/>
+                        {/* Evil grin */}
+                        <path d="M 40 40 Q 50 45 60 40" stroke="#FF0000" strokeWidth="2" fill="none"/>
+                        {/* Dark aura */}
+                        <circle cx="50" cy="50" r="30" fill="none" stroke="#8B0000" strokeWidth="1" opacity="0.3"/>
+                        <circle cx="50" cy="50" r="35" fill="none" stroke="#8B0000" strokeWidth="0.5" opacity="0.2"/>
+                      </svg>
+                      <div className="absolute -top-2 -right-2 bg-red-800 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold">
+                        {enemy.level}
+                      </div>
+                      {isSelected && (
+                        <div className="absolute -top-2 -left-2 bg-yellow-500 text-black text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold">
+                          ✓
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="text-center">
+                    <div className={`text-lg font-bold mb-2 ${isDefeated ? 'text-gray-500 line-through' : 'text-red-900'}`} style={{ fontFamily: 'serif' }}>
+                      👹 {enemy.name} {isDefeated && '(已击败)'}
+                    </div>
+                    
+                    {/* Enemy HP Bar */}
+                    <div className="mb-2">
+                      <div className="text-sm text-amber-800 font-semibold mb-1">妖魔生命</div>
+                      <div className="w-full bg-amber-200 rounded-full h-4 relative border border-amber-600">
+                        <div 
+                          className={`h-4 rounded-full transition-all duration-300 ${
+                            isDefeated ? 'bg-gray-400' : 'bg-gradient-to-r from-red-600 to-red-700'
+                          }`}
+                          style={{ width: `${isDefeated ? 0 : hpPercent}%` }}
+                        >
+                          <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white">
+                            {isDefeated ? '0' : enemy.hp}/{enemy.maxHp}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -87,21 +128,36 @@ const BattleArea: React.FC<BattleAreaProps> = ({
         <div className="flex flex-wrap gap-3 justify-center mb-6">
           <button
             onClick={() => onAction('attack')}
-            className="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white font-bold rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 border-2 border-red-800"
+            disabled={!isPlayerTurn}
+            className={`px-6 py-3 font-bold rounded-lg transition-all duration-300 shadow-md transform hover:-translate-y-1 border-2 ${
+              isPlayerTurn 
+                ? 'bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 hover:shadow-lg border-red-800' 
+                : 'bg-gray-400 text-gray-600 cursor-not-allowed border-gray-500 opacity-50'
+            }`}
           >
             ⚔️ 攻击
           </button>
           <button
             onClick={() => onAction('magic')}
-            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 border-2 border-blue-800"
+            disabled={!isPlayerTurn}
+            className={`px-6 py-3 font-bold rounded-lg transition-all duration-300 shadow-md transform hover:-translate-y-1 border-2 ${
+              isPlayerTurn 
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 hover:shadow-lg border-blue-800' 
+                : 'bg-gray-400 text-gray-600 cursor-not-allowed border-gray-500 opacity-50'
+            }`}
           >
             ✨ 法术
           </button>
           <button
             onClick={() => onAction('heal')}
-            className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 border-2 border-green-800"
+            disabled={!isPlayerTurn}
+            className={`px-6 py-3 font-bold rounded-lg transition-all duration-300 shadow-md transform hover:-translate-y-1 border-2 ${
+              isPlayerTurn 
+                ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 hover:shadow-lg border-green-800' 
+                : 'bg-gray-400 text-gray-600 cursor-not-allowed border-gray-500 opacity-50'
+            }`}
           >
-            🌿 治疗
+            💚 治疗
           </button>
         </div>
 
