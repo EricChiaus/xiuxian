@@ -4,6 +4,8 @@ import CharacterPanel from './components/CharacterPanel';
 import BattleArea from './components/BattleArea';
 import GameInfo from './components/GameInfo';
 import OfflineExpNotification from './components/OfflineExpNotification';
+import Shop from './components/Shop';
+import Inventory from './components/Inventory';
 
 function App() {
   const { gameState, startBattle, performAction, manualLevelUp, resetGame } = useGame();
@@ -32,7 +34,7 @@ function App() {
         </div>
 
         {/* Main Game Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Character Panel */}
           <div className="lg:col-span-1">
             <CharacterPanel 
@@ -43,13 +45,31 @@ function App() {
           </div>
 
           {/* Battle Area */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-1">
             <BattleArea
               inBattle={gameState.inBattle}
               currentEnemy={gameState.currentEnemy}
               battleLog={gameState.battleLog}
               onStartBattle={startBattle}
               onAction={performAction}
+            />
+          </div>
+
+          {/* Shop */}
+          <div className="lg:col-span-1">
+            <Shop
+              shopItems={gameState.shopItems}
+              playerCoins={gameState.player.coin}
+              onBuyItem={gameState.buyItem}
+            />
+          </div>
+
+          {/* Inventory */}
+          <div className="lg:col-span-1">
+            <Inventory
+              character={gameState.player}
+              onUseItem={gameState.useItem}
+              onSellItem={gameState.sellItem}
             />
           </div>
 

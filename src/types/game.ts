@@ -11,6 +11,33 @@ export interface Character {
   exp: number;
   expToNext: number;
   coin: number;
+  inventory: string[]; // New: Simple inventory system
+}
+
+export interface Equipment {
+  id: string;
+  name: string;
+  type: 'weapon' | 'armor' | 'accessory';
+  bonus: {
+    pa?: number;
+    ma?: number;
+    pd?: number;
+    md?: number;
+    maxHp?: number;
+    maxMp?: number;
+  };
+  price: number;
+  sellPrice: number;
+}
+
+export interface ShopItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  sellPrice: number;
+  type: 'equipment' | 'consumable';
+  effect?: string;
 }
 
 export interface Enemy {
@@ -45,6 +72,8 @@ export interface GameState {
   battleLog: BattleLogEntry[];
   offlineExp: number;
   lastRegenerationTime: number;
+  shopItems: ShopItem[]; // New: Shop inventory
+  playerEquipment: Equipment[]; // New: Player equipment
 }
 
 export interface BattleLogEntry {

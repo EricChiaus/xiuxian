@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { GameState, BattleLogEntry, BattleAction } from '../types/game';
+import { GameState, BattleLogEntry, BattleAction, ShopItem, Equipment } from '../types/game';
 import { createInitialCharacter, calculateStats, canLevelUp, levelUp, gainExp, calculateRegenerationRates } from '../utils/character';
 import { generateEnemy } from '../utils/enemies';
 import { saveGame, loadGame, calculateOfflineExp, clearSavedGame } from '../utils/storage';
 import { performPlayerAction, performEnemyAction, checkBattleEnd } from '../utils/battle';
+import { generateShopItems, generateEquipment } from '../utils/shop';
 
 export const useGame = () => {
   const [gameState, setGameState] = useState<GameState>(() => {
@@ -24,7 +25,9 @@ export const useGame = () => {
           timestamp: Date.now()
         }] : [],
         offlineExp,
-        lastRegenerationTime: Date.now()
+        lastRegenerationTime: Date.now(),
+        shopItems: generateShopItems(),
+        playerEquipment: []
       };
     }
     
@@ -35,7 +38,9 @@ export const useGame = () => {
       lastSaveTime: Date.now(),
       battleLog: [],
       offlineExp: 0,
-      lastRegenerationTime: Date.now()
+      lastRegenerationTime: Date.now(),
+      shopItems: generateShopItems(),
+      playerEquipment: []
     };
   });
 
@@ -299,15 +304,114 @@ export const useGame = () => {
         timestamp: Date.now()
       }],
       offlineExp: 0,
-      lastRegenerationTime: Date.now()
+      lastRegenerationTime: Date.now(),
+      shopItems: generateShopItems(),
+      playerEquipment: []
     });
   }, []);
+
+  const buyItem = useCallback((itemId: string) => {
+    const item = gameState.shopItems.find(item => item.id === itemId);
+    if (!item || gameState.player.coin < item.price) return;
+
+    setGameState(prev => {
+      const newPlayer = { ...prev.player, coin: prev.player.coin - item.price };
+      
+      // Add item to inventory
+      if (item.type === 'equipment') {
+        newPlayer.inventory = [...newPlayer.inventory, itemId];
+      } else {
+        // For consumables, don't add to inventory (use immediately)
+        newPlayer.coin = prev.player.coin - item.price;
+      }
+
+      return {
+        ...prev,
+        player: newPlayer
+      };
+    });
+
+    addBattleLogEntry({
+      message: `Purchased ${item.name} for ${item.price} 🪙!`,
+      type: 'system',
+      timestamp: Date.now()
+    });
+  }, [gameState.shopItems, gameState.player.coin]);
+
+  const sellItem = useCallback((itemId: string) => {
+    if (!gameState.player.inventory.includes(itemId)) return;
+
+    const item = gameState.shopItems.find(shopItem => shopItem.id === itemId);
+    if (!item) return;
+
+    setGameState(prev => {
+      const newPlayer = { 
+        ...prev.player, 
+        coin: prev.player.coin + item.sellPrice,
+        inventory: prev.player.inventory.filter(id => id !== itemId)
+      };
+
+      return {
+        ...prev,
+        player: newPlayer
+      };
+    });
+
+    addBattleLogEntry({
+      message: `Sold item for ${item.sellPrice} 🪙!`,
+      type: 'system',
+      timestamp: Date.now()
+    });
+  }, [gameState.player.inventory, gameState.shopItems]);
+
+  const useItem = useCallback((itemId: string) => {
+    if (!gameState.player.inventory.includes(itemId)) return;
+
+    let newPlayer = { ...gameState.player };
+    let logMessage = '';
+
+    switch (itemId) {
+      case 'potion1':
+        newPlayer.hp = Math.min(newPlayer.maxHp, newPlayer.hp + 50);
+        logMessage = 'Used Health Potion! Restored 50 HP!';
+        break;
+      case 'potion2':
+        newPlayer.mp = Math.min(newPlayer.maxMp, newPlayer.mp + 30);
+        logMessage = 'Used Mana Potion! Restored 30 MP!';
+        break;
+      case 'potion3':
+        newPlayer.hp = newPlayer.maxHp;
+        newPlayer.mp = newPlayer.maxMp;
+        logMessage = 'Used Full Heal Potion! Fully restored HP and MP!';
+        break;
+      default:
+        return;
+    }
+
+    if (logMessage) {
+      newPlayer.inventory = newPlayer.inventory.filter(id => id !== itemId);
+      
+      setGameState(prev => ({
+        ...prev,
+        player: newPlayer
+      }));
+
+      addBattleLogEntry({
+        message: logMessage,
+        type: 'system',
+        timestamp: Date.now()
+      });
+    }
+  }, [gameState.player.inventory]);
 
   return {
     gameState,
     startBattle,
     performAction,
     manualLevelUp,
-    resetGame
+    resetGame,
+    buyItem,
+    sellItem,
+    useItem
   };
 };
