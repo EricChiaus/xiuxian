@@ -49,7 +49,7 @@ export const useGame = () => {
     };
   });
 
-  // Auto-save every 30 seconds
+  // Auto-save every 30 seconds or when player stats change
   useEffect(() => {
     const interval = setInterval(() => {
       saveGame({
@@ -59,7 +59,7 @@ export const useGame = () => {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [gameState]);
+  }, [gameState.player, gameState.player.inventory, gameState.playerEquipment, gameState.player.level, gameState.player.coin, gameState.player.exp, gameState.player.hp, gameState.player.mp, gameState.player.maxHp, gameState.player.maxMp, gameState.player.pa, gameState.player.ma, gameState.player.pd, gameState.player.md, gameState.player.expToNext]);
 
   // HP/MP regeneration when idle (not in battle)
   useEffect(() => {
@@ -338,7 +338,7 @@ export const useGame = () => {
       type: 'system',
       timestamp: Date.now()
     });
-  }, [gameState.shopItems, gameState.player.coin]);
+  }, [gameState.shopItems, gameState.player.coin, gameState.player.inventory]);
 
   const sellItem = useCallback((itemId: string) => {
     if (!gameState.player.inventory.includes(itemId)) return;
@@ -387,6 +387,7 @@ export const useGame = () => {
         logMessage = 'Used Full Heal Potion! Fully restored HP and MP!';
         break;
       default:
+        // Equipment items - would implement equip logic here
         return;
     }
 
