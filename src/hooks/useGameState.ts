@@ -78,7 +78,7 @@ export const useGameState = () => {
         offlineExp,
         lastRegenerationTime: Date.now(),
         shopItems: generateShopItems(cappedCharacter.level),
-        playerEquipment: []
+        playerEquipment: savedData.playerEquipment || {} // Preserve purchased equipment
       };
     }
     

@@ -1,7 +1,21 @@
 import { useCallback } from 'react';
 import { BattleLogEntry, GameState, Equipment, Character } from '../types/game';
 import { generateShopItems } from '../utils/shop';
-import { generateRandomEquipment, calculateCharacterStats } from '../utils/equipment';
+import { generateRandomEquipment, calculateCharacterStats, generateEquipment } from '../utils/equipment';
+
+// Helper function to convert Chinese equipment names to English types
+const getEquipmentTypeFromChineseName = (chineseName: string): Equipment['type'] => {
+  const typeMap: { [key: string]: Equipment['type'] } = {
+    '武器': 'weapon',
+    '护甲': 'armor',
+    '头盔': 'helmet',
+    '靴子': 'boots',
+    '戒指': 'ring',
+    '项链': 'necklace',
+    '饰品': 'accessory'
+  };
+  return typeMap[chineseName] || 'weapon';
+};
 
 export const useShopInventory = (
   gameState: GameState,
@@ -24,9 +38,15 @@ export const useShopInventory = (
     gameState.shopItems.forEach(shopItem => {
       if (!allEquipment.find(eq => eq.id === shopItem.id)) {
         if (shopItem.id.includes('equipment_')) {
-          // Generate actual equipment data for shop items (not purchased yet)
+          // Parse the actual equipment data from shop item description
           const level = parseInt(shopItem.description.match(/等级 (\d+)/)?.[1] || '1');
-          const equipment = generateRandomEquipment(level);
+          const rarity = shopItem.description.match(/(普通|罕见|稀有|史诗|传奇)/)?.[1] as Equipment['rarity'] || 'common';
+          const typeMatch = shopItem.description.match(/(武器|护甲|头盔|靴子|戒指|项链|饰品)/)?.[1];
+          const type = typeMatch ? getEquipmentTypeFromChineseName(typeMatch) : 'weapon';
+          
+          // Generate equipment with proper stats based on the shop item data
+          const equipment = generateEquipment(shopItem.id, type, level, rarity);
+          
           allEquipment.push({
             ...equipment,
             id: shopItem.id,
