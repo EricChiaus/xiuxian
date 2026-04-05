@@ -5,6 +5,7 @@ import BattleArea from './components/BattleArea';
 import Shop from './components/Shop';
 import Inventory from './components/Inventory';
 import Profile from './components/Profile';
+import { getCultivatorLevelName } from './types/game';
 
 function App() {
   const { gameState, setGameState, startBattle, performAction, manualLevelUp, resetGame, buyItem, sellItem, useItem, refreshShop, selectEnemy } = useGame();
@@ -35,7 +36,7 @@ function App() {
         {/* Game Info Bar */}
         <div className="flex justify-between items-center bg-gradient-to-r from-amber-100 to-orange-100 rounded-xl p-4 mb-6 border-2 border-amber-700">
           <div className="text-lg font-bold text-red-900">
-            境界: <span className="text-amber-600">{gameState.player.level}</span>
+            境界: <span className="text-amber-600">{getCultivatorLevelName(gameState.player.level)}</span>
           </div>
           <div className="text-xl font-bold text-amber-700">
             🪙 灵石: {gameState.player.coin}

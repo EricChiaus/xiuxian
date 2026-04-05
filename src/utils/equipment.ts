@@ -193,9 +193,13 @@ export const calculateCharacterStats = (character: Character, allEquipment: Equi
   return stats;
 };
 
-export const getHighestElement = (elements: Partial<Elements>): { element: ElementType | null, value: number } => {
+export const getHighestElement = (elements: Partial<Elements> | null | undefined): { element: ElementType | null, value: number } => {
   let highestValue = 0;
   let highestElement: ElementType | null = null;
+  
+  if (!elements) {
+    return { element: null, value: 0 };
+  }
   
   Object.entries(elements).forEach(([element, value]) => {
     if (value && value > highestValue) {
