@@ -1,11 +1,11 @@
 import { Enemy, EnemyType } from '../types/game';
 
 export const enemyTypes: EnemyType[] = [
-  { name: "Goblin", baseHp: 50, basePa: 8, basePd: 3, expReward: 20, coinReward: 10 },
-  { name: "Slime", baseHp: 40, basePa: 6, basePd: 2, expReward: 15, coinReward: 8 },
-  { name: "Wolf", baseHp: 60, basePa: 12, basePd: 4, expReward: 25, coinReward: 12 },
-  { name: "Orc", baseHp: 80, basePa: 15, basePd: 6, expReward: 35, coinReward: 18 },
-  { name: "Skeleton", baseHp: 55, basePa: 10, basePd: 5, expReward: 22, coinReward: 11 }
+  { name: "小妖", baseHp: 50, basePa: 8, basePd: 3, expReward: 20, coinReward: 10 },
+  { name: "妖兽", baseHp: 40, basePa: 6, basePd: 2, expReward: 15, coinReward: 8 },
+  { name: "狼妖", baseHp: 60, basePa: 12, basePd: 4, expReward: 25, coinReward: 12 },
+  { name: "魔兵", baseHp: 80, basePa: 15, basePd: 6, expReward: 35, coinReward: 18 },
+  { name: "骷髅怪", baseHp: 55, basePa: 10, basePd: 5, expReward: 22, coinReward: 11 }
 ];
 
 export const generateEnemy = (playerLevel: number): Enemy => {

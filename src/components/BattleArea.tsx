@@ -19,13 +19,13 @@ const BattleArea: React.FC<BattleAreaProps> = ({
   const getLogEntryClass = (type: string) => {
     switch (type) {
       case 'player':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 border border-blue-300';
       case 'enemy':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 border border-red-300';
       case 'system':
-        return 'bg-green-100 text-green-800';
+        return 'bg-amber-100 text-amber-800 border border-amber-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 border border-gray-300';
     }
   };
 
@@ -33,27 +33,46 @@ const BattleArea: React.FC<BattleAreaProps> = ({
     const hpPercent = (currentEnemy.hp / currentEnemy.maxHp) * 100;
 
     return (
-      <div className="bg-white rounded-2xl p-6 shadow-lg">
-        <h3 className="text-xl font-bold text-center mb-4 text-gray-800">Battle</h3>
+      <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl p-6 shadow-lg border-2 border-red-700">
+        <h3 className="text-xl font-bold text-center mb-4 text-red-900" style={{ fontFamily: 'serif' }}>⚔️ 战斗 ⚔️</h3>
         
         {/* Enemy Display */}
         <div className="text-center mb-6">
-          <svg className="w-20 h-20 mx-auto mb-3" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="40" fill="#ff6b6b"/>
-            <circle cx="35" cy="40" r="3" fill="#333"/>
-            <circle cx="65" cy="40" r="3" fill="#333"/>
-            <path d="M 30 55 L 70 55" stroke="#333" strokeWidth="2"/>
-          </svg>
-          <div className="text-lg font-bold text-gray-800 mb-2">
-            {currentEnemy.name} (Lv.{currentEnemy.level})
+          <div className="relative inline-block">
+            <svg className="w-20 h-20 mx-auto mb-3" viewBox="0 0 100 100">
+              {/* Demon body */}
+              <ellipse cx="50" cy="60" rx="25" ry="20" fill="#8B0000"/>
+              {/* Demon head */}
+              <circle cx="50" cy="35" r="18" fill="#8B0000"/>
+              {/* Horns */}
+              <path d="M 35 25 L 32 15 L 38 20" fill="#654321" stroke="#654321" strokeWidth="1"/>
+              <path d="M 65 25 L 68 15 L 62 20" fill="#654321" stroke="#654321" strokeWidth="1"/>
+              {/* Evil eyes - red glow */}
+              <circle cx="42" cy="32" r="3" fill="#FF0000"/>
+              <circle cx="58" cy="32" r="3" fill="#FF0000"/>
+              <circle cx="42" cy="32" r="1" fill="#FFFF00"/>
+              <circle cx="58" cy="32" r="1" fill="#FFFF00"/>
+              {/* Evil grin */}
+              <path d="M 35 42 Q 50 48 65 42" stroke="#FF0000" strokeWidth="2" fill="none"/>
+              {/* Dark aura */}
+              <circle cx="50" cy="50" r="35" fill="none" stroke="#8B0000" strokeWidth="1" opacity="0.5"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#8B0000" strokeWidth="0.5" opacity="0.3"/>
+            </svg>
+            {/* Enemy level indicator */}
+            <div className="absolute -top-2 -right-2 bg-red-800 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold">
+              {currentEnemy.level}
+            </div>
+          </div>
+          <div className="text-lg font-bold text-red-900 mb-2" style={{ fontFamily: 'serif' }}>
+            👹 {currentEnemy.name}
           </div>
           
           {/* Enemy HP Bar */}
           <div className="mb-4">
-            <div className="text-sm text-gray-600 mb-1">Enemy HP</div>
-            <div className="w-full bg-gray-300 rounded-full h-5 relative">
+            <div className="text-sm text-amber-800 font-semibold mb-1">妖魔生命</div>
+            <div className="w-full bg-amber-200 rounded-full h-5 relative border border-amber-600">
               <div 
-                className="bg-gradient-to-r from-red-500 to-red-600 h-5 rounded-full transition-all duration-300"
+                className="bg-gradient-to-r from-red-600 to-red-700 h-5 rounded-full transition-all duration-300"
                 style={{ width: `${hpPercent}%` }}
               >
                 <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white">
@@ -68,32 +87,30 @@ const BattleArea: React.FC<BattleAreaProps> = ({
         <div className="flex flex-wrap gap-3 justify-center mb-6">
           <button
             onClick={() => onAction('attack')}
-            className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-bold rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1"
+            className="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white font-bold rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 border-2 border-red-800"
           >
-            ⚔️ Attack
+            ⚔️ 攻击
           </button>
           <button
             onClick={() => onAction('magic')}
-            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1"
+            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 border-2 border-blue-800"
           >
-            ✨ Magic
+            ✨ 法术
           </button>
           <button
             onClick={() => onAction('heal')}
-            className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1"
+            className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 border-2 border-green-800"
           >
-            💚 Heal
+            🌿 治疗
           </button>
         </div>
 
         {/* Battle Log */}
-        <div className="bg-gray-50 rounded-lg p-4 h-40 overflow-y-auto">
-          <div className="space-y-2">
-            {battleLog.slice(-10).map((entry, index) => (
-              <div
-                key={`${entry.timestamp}-${index}`}
-                className={`text-sm p-2 rounded ${getLogEntryClass(entry.type)}`}
-              >
+        <div className="bg-amber-50 rounded-xl p-4 border-2 border-amber-600 max-h-32 overflow-y-auto">
+          <h4 className="text-sm font-bold text-amber-900 mb-2">战斗记录</h4>
+          <div className="space-y-1">
+            {battleLog.slice(-5).reverse().map((entry, index) => (
+              <div key={index} className={`text-xs p-2 rounded ${getLogEntryClass(entry.type)}`}>
                 {entry.message}
               </div>
             ))}
@@ -104,17 +121,34 @@ const BattleArea: React.FC<BattleAreaProps> = ({
   }
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-lg">
-      <h3 className="text-xl font-bold text-center mb-4 text-gray-800">Main Area</h3>
+    <div className="bg-gradient-to-br from-amber-100 to-orange-100 rounded-2xl p-6 shadow-lg border-2 border-amber-700">
+      <h3 className="text-xl font-bold text-center mb-4 text-red-900" style={{ fontFamily: 'serif' }}>⚔️ 修行历练 ⚔️</h3>
       
-      <div className="text-center py-12">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Welcome to the RPG Game!</h2>
-        <p className="text-gray-600 mb-8">Fight enemies to gain EXP and coins!</p>
+      <div className="text-center">
+        <div className="mb-6">
+          <svg className="w-20 h-20 mx-auto mb-3" viewBox="0 0 100 100">
+            {/* Cultivator in meditation */}
+            <ellipse cx="50" cy="70" rx="20" ry="15" fill="#8B4513"/>
+            <circle cx="50" cy="35" r="15" fill="#fdbcb4"/>
+            {/* Meditation pose */}
+            <circle cx="50" cy="25" r="8" fill="#2c1810"/>
+            <circle cx="50" cy="20" r="4" fill="#2c1810"/>
+            <circle cx="40" cy="33" r="1.5" fill="#333"/>
+            <circle cx="60" cy="33" r="1.5" fill="#333"/>
+            <path d="M 40 40 Q 50 44 60 40" stroke="#333" strokeWidth="1" fill="none"/>
+            {/* Spiritual energy */}
+            <circle cx="50" cy="50" r="30" fill="none" stroke="#FFD700" strokeWidth="1" opacity="0.4"/>
+            <circle cx="50" cy="50" r="35" fill="none" stroke="#FFD700" strokeWidth="0.5" opacity="0.2"/>
+          </svg>
+        </div>
+        
+        <p className="text-amber-800 mb-6">准备开始历练，斩妖除魔！</p>
+        
         <button
           onClick={onStartBattle}
-          className="px-8 py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white font-bold rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-lg"
+          className="px-8 py-4 bg-gradient-to-r from-red-600 to-orange-600 text-white font-bold rounded-lg hover:from-red-700 hover:to-orange-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 border-2 border-red-800 text-lg"
         >
-          ⚔️ Fight Enemy
+          🗡️ 开始历练
         </button>
       </div>
     </div>

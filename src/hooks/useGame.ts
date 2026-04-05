@@ -197,6 +197,13 @@ export const useGame = () => {
       return;
     }
 
+    // Update game state with damaged enemy and player changes
+    setGameState(prev => ({
+      ...prev,
+      player: playerResult.character,
+      currentEnemy: playerResult.enemy
+    }));
+
     // Enemy action
     setTimeout(() => {
       setGameState(prev => {

@@ -2,98 +2,72 @@ import { ShopItem, Equipment } from '../types/game';
 
 export const generateShopItems = (): ShopItem[] => {
   return [
-    // Weapons
+    // Weapons - 法剑
     {
       id: 'sword1',
-      name: 'Iron Sword',
-      description: 'A basic sword with +5 PA',
+      name: '铁剑',
+      description: '凡铁打造的剑，蕴含微弱灵气',
       price: 100,
       type: 'equipment',
-      effect: '+5 Physical Attack'
+      effect: '+5 攻击力'
     },
     {
       id: 'sword2',
-      name: 'Steel Sword',
-      description: 'A sturdy sword with +10 PA',
+      name: '钢剑',
+      description: '百炼钢剑，锋利无比',
       price: 250,
       type: 'equipment',
-      effect: '+10 Physical Attack'
+      effect: '+10 攻击力'
     },
     {
       id: 'staff1',
-      name: 'Wooden Staff',
-      description: 'A basic staff with +5 MA',
+      name: '木杖',
+      description: '千年灵木所制，可引导灵力',
       price: 80,
       type: 'equipment',
-      effect: '+5 Magic Attack'
+      effect: '+5 法术攻击'
     },
     {
       id: 'staff2',
-      name: 'Crystal Staff',
-      description: 'A powerful staff with +12 MA',
+      name: '水晶杖',
+      description: '蕴含水精之力的法杖',
       price: 200,
       type: 'equipment',
-      effect: '+12 Magic Attack'
+      effect: '+12 法术攻击'
     },
     
-    // Armor
+    // Armor - 护甲/道袍
     {
       id: 'armor1',
-      name: 'Leather Armor',
-      description: 'Light armor with +3 PD',
+      name: '皮甲',
+      description: '兽皮制成的轻甲，可抵御寻常攻击',
       price: 120,
       type: 'equipment',
-      effect: '+3 Physical Defense'
+      effect: '+3 防御力'
     },
     {
       id: 'armor2',
-      name: 'Iron Armor',
-      description: 'Heavy armor with +6 PD',
+      name: '铁甲',
+      description: '玄铁打造的重甲，防御力强',
       price: 300,
       type: 'equipment',
-      effect: '+6 Physical Defense'
+      effect: '+6 防御力'
     },
     {
       id: 'armor3',
-      name: 'Robe',
-      description: 'Magic robe with +4 MD',
+      name: '道袍',
+      description: '普通道袍，可抵御法术攻击',
       price: 150,
       type: 'equipment',
-      effect: '+4 Magic Defense'
+      effect: '+4 抗法'
     },
     {
       id: 'armor4',
-      name: 'Enchanted Robe',
-      description: 'Powerful robe with +8 MD',
+      name: '法袍',
+      description: '蕴含灵力的道袍，抗法能力出众',
       price: 350,
       type: 'equipment',
-      effect: '+8 Magic Defense'
-    },
-    
-    // Consumables
-    {
-      id: 'potion1',
-      name: 'Health Potion',
-      description: 'Restores 50 HP',
-      price: 30,
-      type: 'consumable',
-      effect: 'Restore 50 HP'
-    },
-    {
-      id: 'potion2',
-      name: 'Mana Potion',
-      description: 'Restores 30 MP',
-      price: 25,
-      type: 'consumable',
-      effect: 'Restore 30 MP'
-    },
-    {
-      id: 'potion3',
-      name: 'Full Heal Potion',
-      description: 'Fully restores HP and MP',
-      price: 100,
-      type: 'consumable',
-      effect: 'Full HP/MP restore'
+      effect: '+8 抗法'
     }
   ];
 };
