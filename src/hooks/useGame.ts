@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { GameState, Character, Enemy, BattleLogEntry, BattleAction } from '../types/game';
-import { createInitialCharacter, calculateStats, canLevelUp, levelUp, gainExp } from '../utils/character';
+import { GameState, BattleLogEntry, BattleAction } from '../types/game';
+import { createInitialCharacter, calculateStats, canLevelUp, levelUp, gainExp, calculateRegenerationRates } from '../utils/character';
 import { generateEnemy } from '../utils/enemies';
 import { saveGame, loadGame, calculateOfflineExp, clearSavedGame } from '../utils/storage';
 import { performPlayerAction, performEnemyAction, checkBattleEnd } from '../utils/battle';
@@ -23,7 +23,8 @@ export const useGame = () => {
           type: 'system',
           timestamp: Date.now()
         }] : [],
-        offlineExp
+        offlineExp,
+        lastRegenerationTime: Date.now()
       };
     }
     
@@ -33,7 +34,8 @@ export const useGame = () => {
       inBattle: false,
       lastSaveTime: Date.now(),
       battleLog: [],
-      offlineExp: 0
+      offlineExp: 0,
+      lastRegenerationTime: Date.now()
     };
   });
 
@@ -48,6 +50,35 @@ export const useGame = () => {
 
     return () => clearInterval(interval);
   }, [gameState]);
+
+  // HP/MP regeneration when idle (not in battle)
+  useEffect(() => {
+    if (gameState.inBattle) return;
+
+    const regenerationInterval = setInterval(() => {
+      setGameState(prev => {
+        const regenRates = calculateRegenerationRates(prev.player.level);
+        const timeDiff = (Date.now() - prev.lastRegenerationTime) / 1000; // Convert to seconds
+        const hpRegen = Math.floor(regenRates.hpPerSecond * timeDiff);
+        const mpRegen = Math.floor(regenRates.mpPerSecond * timeDiff);
+        
+        const newHp = Math.min(prev.player.maxHp, prev.player.hp + hpRegen);
+        const newMp = Math.min(prev.player.maxMp, prev.player.mp + mpRegen);
+        
+        if (newHp > prev.player.hp || newMp > prev.player.mp) {
+          return {
+            ...prev,
+            player: { ...prev.player, hp: newHp, mp: newMp },
+            lastRegenerationTime: Date.now()
+          };
+        }
+        
+        return prev;
+      });
+    }, 1000); // Check every second
+
+    return () => clearInterval(regenerationInterval);
+  }, [gameState.inBattle, gameState.player.level]);
 
   const addBattleLogEntry = useCallback((entry: BattleLogEntry) => {
     setGameState(prev => ({
@@ -79,6 +110,15 @@ export const useGame = () => {
     // Player action
     const playerResult = performPlayerAction(gameState.player, gameState.currentEnemy, action);
     addBattleLogEntry(playerResult.logEntry);
+
+    // Add turn regeneration log if applicable
+    if (playerResult.turnRegeneration) {
+      addBattleLogEntry({
+        message: `Regenerated +${playerResult.turnRegeneration.hpRegen} HP and +${playerResult.turnRegeneration.mpRegen} MP this turn!`,
+        type: 'system',
+        timestamp: Date.now()
+      });
+    }
 
     // Check if battle ended after player action
     const battleEndCheck = checkBattleEnd(playerResult.character, playerResult.enemy);
@@ -243,7 +283,8 @@ export const useGame = () => {
         type: 'system',
         timestamp: Date.now()
       }],
-      offlineExp: 0
+      offlineExp: 0,
+      lastRegenerationTime: Date.now()
     });
   }, []);
 

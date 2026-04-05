@@ -44,6 +44,7 @@ export interface GameState {
   lastSaveTime: number;
   battleLog: BattleLogEntry[];
   offlineExp: number;
+  lastRegenerationTime: number;
 }
 
 export interface BattleLogEntry {

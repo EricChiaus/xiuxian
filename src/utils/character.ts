@@ -91,3 +91,26 @@ export const useMp = (character: Character, amount: number): Character => {
   const newMp = Math.max(0, character.mp - amount);
   return { ...character, mp: newMp };
 };
+
+export const regenerateHpMp = (character: Character, hpRegenRate: number, mpRegenRate: number): Character => {
+  const newHp = Math.min(character.maxHp, character.hp + hpRegenRate);
+  const newMp = Math.min(character.maxMp, character.mp + mpRegenRate);
+  return { ...character, hp: newHp, mp: newMp };
+};
+
+export const calculateRegenerationRates = (level: number): { hpPerSecond: number; mpPerSecond: number } => {
+  const baseHpRegen = 1.5; // Increased from 0.5 to 1.5 (3x faster)
+  const baseMpRegen = 0.6; // Increased from 0.2 to 0.6 (3x faster)
+  
+  return {
+    hpPerSecond: baseHpRegen + (level - 1) * 0.3, // Increased from 0.1 to 0.3
+    mpPerSecond: baseMpRegen + (level - 1) * 0.15 // Increased from 0.05 to 0.15
+  };
+};
+
+export const calculateTurnRegeneration = (level: number): { hpRegen: number; mpRegen: number } => {
+  return {
+    hpRegen: Math.floor(2 + level * 0.5),
+    mpRegen: Math.floor(1 + level * 0.3)
+  };
+};
