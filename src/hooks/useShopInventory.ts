@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { BattleLogEntry, GameState, Equipment, Character } from '../types/game';
 import { generateShopItems } from '../utils/shop';
 import { generateRandomEquipment, calculateCharacterStats, generateEquipment } from '../utils/equipment';
+import { generateEquipment as generateShopEquipment } from '../utils/shop';
 
 // Helper function to convert Chinese equipment names to English types
 const getEquipmentTypeFromChineseName = (chineseName: string): Equipment['type'] => {
@@ -55,15 +56,12 @@ export const useShopInventory = (
             sellPrice: Math.floor(shopItem.price / 2)
           });
         } else {
-          // Legacy items - create basic equipment data
-          const legacyEquipment = generateRandomEquipment(1);
-          allEquipment.push({
-            ...legacyEquipment,
-            id: shopItem.id,
-            name: shopItem.name,
-            price: shopItem.price,
-            sellPrice: Math.floor(shopItem.price / 2)
-          });
+          // Legacy items - use the actual equipment data from shop.ts
+          const allLegacyEquipment = generateShopEquipment();
+          const legacyEquipment = allLegacyEquipment.find((eq: Equipment) => eq.id === shopItem.id);
+          if (legacyEquipment) {
+            allEquipment.push(legacyEquipment);
+          }
         }
       }
     });
