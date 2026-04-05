@@ -10,18 +10,18 @@ export const generateShopItems = (playerLevel: number): ShopItem[] => {
   }
   
   return items.map(item => {
-    // Get the highest power for display
-    const highestPower = Object.entries(item.Elements)
+    // Get the highest element for display
+    const highestElement = Object.entries(item.elements)
       .filter(([_, value]) => value > 0)
-      .sort(([_, a], [__, b]) => b - a)[0];
+      .sort(([_, a], [__, b]) => (b as number) - (a as number))[0];
     
     return {
       id: item.id,
       name: item.name,
-      description: `${item.name} (Level ${item.level})${highestPower ? ` - ${highestPower[0]} ${highestPower[1]}` : ''}`,
+      description: `${item.name} (Level ${item.level})${highestElement ? ` - ${highestElement[0]} ${highestElement[1]}` : ''}`,
       price: item.price,
       type: 'equipment',
-      effect: `Power: ${item.bonus.pa || item.bonus.ma || 0}${highestPower ? ` (${highestPower[0]} ${highestPower[1]})` : ''}`
+      effect: `Power: ${item.bonus.pa || item.bonus.ma || 0}${highestElement ? ` (${highestElement[0]} ${highestElement[1]})` : ''}`
     };
   });
 };

@@ -1,4 +1,5 @@
 import { Character, Enemy, BattleAction, getElementMultiplier, BattleLogEntry } from '../types/game';
+import { getHighestElement } from './equipment';
 import { calculateDamage, calculateHeal, chooseEnemyAction } from './enemies';
 import { restoreHp, useMp, regenerateHpMpExp, calculateTurnRegeneration } from './character';
 import { getHighestPower } from './equipment';

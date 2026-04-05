@@ -56,7 +56,7 @@ export const levelUp = (character: Character): Character => {
   let newCharacter = { ...character };
   newCharacter.level++;
   newCharacter.exp -= newCharacter.expToNext;
-  newCharacter.expToNext = Math.floor(200 * Math.pow(1.5, newCharacter.level - 1));
+  newCharacter.expToNext = Math.floor(2000 * Math.pow(1.5, newCharacter.level - 1));
   
   return calculateStats(newCharacter);
 };

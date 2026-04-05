@@ -9,13 +9,13 @@ export interface ItemStats {
   maxMp?: number;
 }
 
-const generateRandomPower = (): ElementType | null => {
+const generateRandomElement = (): ElementType | null => {
   const elements: ElementType[] = ['metal', 'wood', 'water', 'fire', 'earth', 'yin', 'yang'];
-  return Math.random() < 0.6 ? Elements[Math.floor(Math.random() * Elements.length)] : null; // 60% chance to have a power
+  return Math.random() < 0.6 ? elements[Math.floor(Math.random() * elements.length)] : null; // 60% chance to have an element
 };
 
-const generatePowerValue = (level: number): number => {
-  return Math.floor(level * 2 + Math.random() * 3); // 2-5 power per equipment level
+const generateElementValue = (level: number): number => {
+  return Math.floor(level * 2 + Math.random() * 3); // 2-5 element per equipment level
 };
 
 const generateElementResistanceValue = (level: number): number => {
@@ -28,31 +28,31 @@ export const generateEquipment = (id: string, type: 'weapon' | 'armor' | 'access
   const basePrice = getBasePrice(type);
   const price = Math.floor(basePrice * levelMultiplier);
   
-  // Generate Elements and resistance
-  const primaryPower = generateRandomPower();
-  const secondaryPower = type === 'accessory' && Math.random() < 0.3 ? generateRandomPower() : null; // Accessories can have 2 Elements
+  // Generate elements and resistance
+  const primaryElement = generateRandomElement();
+  const secondaryElement = type === 'accessory' && Math.random() < 0.3 ? generateRandomElement() : null; // Accessories can have 2 elements
   
   const elements: Partial<Elements> = {};
   const elementResistance: Partial<ElementResistance> = {};
   
-  if (primaryPower) {
-    Elements[primaryPower] = generatePowerValue(level);
-    ElementResistance[primaryPower] = generateElementResistanceValue(level);
+  if (primaryElement) {
+    elements[primaryElement] = generateElementValue(level);
+    elementResistance[primaryElement] = generateElementResistanceValue(level);
   }
   
-  if (secondaryPower && secondaryPower !== primaryPower) {
-    Elements[secondaryPower] = generatePowerValue(level);
-    ElementResistance[secondaryPower] = generateElementResistanceValue(level);
+  if (secondaryElement && secondaryElement !== primaryElement) {
+    elements[secondaryElement] = generateElementValue(level);
+    elementResistance[secondaryElement] = generateElementResistanceValue(level);
   }
   
-  // All equipment types get some resistance to their primary power
-  if (primaryPower) {
-    ElementResistance[primaryPower] = (ElementResistance[primaryPower] || 0) + generateElementResistanceValue(level);
+  // All equipment types get some resistance to their primary element
+  if (primaryElement) {
+    elementResistance[primaryElement] = (elementResistance[primaryElement] || 0) + generateElementResistanceValue(level);
   }
   
   return {
     id,
-    name: getEquipmentName(type, level, primaryPower),
+    name: getEquipmentName(type, level, primaryElement),
     type,
     level,
     bonus: {
@@ -63,8 +63,8 @@ export const generateEquipment = (id: string, type: 'weapon' | 'armor' | 'access
       maxHp: baseStats.maxHp ? Math.floor(baseStats.maxHp * levelMultiplier) : undefined,
       maxMp: baseStats.maxMp ? Math.floor(baseStats.maxMp * levelMultiplier) : undefined
     },
-    Elements,
-    ElementResistance,
+    elements,
+    elementResistance,
     price,
     sellPrice: Math.floor(price * 0.5)
   };
@@ -92,17 +92,9 @@ const getBasePrice = (type: 'weapon' | 'armor' | 'accessory'): number => {
   }
 };
 
-const getEquipmentName = (type: 'weapon' | 'armor' | 'accessory', level: number, power?: ElementType | null): string => {
+const getEquipmentName = (type: 'weapon' | 'armor' | 'accessory', level: number, element?: ElementType | null): string => {
   const levelPrefix = ['', '精良', '稀有', '史诗', '传说', '神话'][level - 1] || '';
-  const powerPrefix = power ? {
-    metal: '金',
-    wood: '木',
-    water: '水',
-    fire: '火',
-    earth: '土',
-    yin: '阴',
-    yang: '阳'
-  }[power] : '';
+  const elementPrefix = element ? getElementName(element) : '';
   
   const typeName = {
     weapon: ['铁剑', '钢剑', '灵剑', '仙剑', '神剑'],
@@ -110,7 +102,7 @@ const getEquipmentName = (type: 'weapon' | 'armor' | 'accessory', level: number,
     accessory: ['木符', '玉符', '灵符', '仙符', '神符']
   };
   
-  return levelPrefix + powerPrefix + typeName[type][level - 1];
+  return levelPrefix + elementPrefix + typeName[type][level - 1];
 };
 
 export const generateRandomEquipment = (playerLevel: number): Equipment => {
@@ -159,16 +151,16 @@ export const calculateCharacterStats = (character: Character, allEquipment: Equi
     if (equipment.bonus.maxHp) totalBonus.maxHp = (totalBonus.maxHp || 0) + equipment.bonus.maxHp;
     if (equipment.bonus.maxMp) totalBonus.maxMp = (totalBonus.maxMp || 0) + equipment.bonus.maxMp;
     
-    // Apply power bonuses
-    Object.keys(equipment.Elements).forEach(power => {
-      const powerKey = power as keyof Elements;
-      totalElements[powerKey] = (totalElements[powerKey] || 0) + equipment.Elements[powerKey]!;
+    // Apply element bonuses
+    Object.keys(equipment.elements).forEach(element => {
+      const elementKey = element as keyof Elements;
+      totalElements[elementKey] = (totalElements[elementKey] || 0) + equipment.elements[elementKey]!;
     });
     
     // Apply resistance bonuses
-    Object.keys(equipment.ElementResistance).forEach(resistance => {
+    Object.keys(equipment.elementResistance).forEach(resistance => {
       const resistanceKey = resistance as keyof ElementResistance;
-      totalResistance[resistanceKey] = (totalResistance[resistanceKey] || 0) + equipment.ElementResistance[resistanceKey]!;
+      totalResistance[resistanceKey] = (totalResistance[resistanceKey] || 0) + equipment.elementResistance[resistanceKey]!;
     });
   });
   
@@ -180,15 +172,15 @@ export const calculateCharacterStats = (character: Character, allEquipment: Equi
   stats.maxHp = (baseCharacter.maxHp || 0) + (totalBonus.maxHp || 0);
   stats.maxMp = (baseCharacter.maxMp || 0) + (totalBonus.maxMp || 0);
   
-  // Apply power bonuses to base Elements
-  stats.elements = { ...baseCharacter.Elements };
-  Object.keys(totalElements).forEach(power => {
-    const powerKey = power as keyof Elements;
-    stats.elements[powerKey] = (stats.elements[powerKey] || 0) + totalElements[powerKey]!;
+  // Apply element bonuses to base elements
+  stats.elements = { ...baseCharacter.elements };
+  Object.keys(totalElements).forEach(element => {
+    const elementKey = element as keyof Elements;
+    stats.elements[elementKey] = (stats.elements[elementKey] || 0) + totalElements[elementKey]!;
   });
   
   // Apply resistance bonuses to base resistance
-  stats.elementResistance = { ...baseCharacter.ElementResistance };
+  stats.elementResistance = { ...baseCharacter.elementResistance };
   Object.keys(totalResistance).forEach(resistance => {
     const resistanceKey = resistance as keyof ElementResistance;
     stats.elementResistance[resistanceKey] = (stats.elementResistance[resistanceKey] || 0) + totalResistance[resistanceKey]!;
