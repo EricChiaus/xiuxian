@@ -3,8 +3,7 @@ import { Enemy, BattleLogEntry, BattleAction, GameState } from '../types/game';
 import { generateMultipleEnemies } from '../utils/enemies';
 import { 
   performPlayerAction, 
-  performEnemyAction, 
-  checkBattleEnd 
+  performEnemyAction
 } from '../utils/battle';
 import { 
   levelUp, 
@@ -89,12 +88,15 @@ export const useBattle = (
     }));
 
     // Check if battle ended after player action
-    const battleEndCheck = checkBattleEnd(playerResult.character, playerResult.enemy);
-    if (battleEndCheck.isVictory) {
-      const expGained = playerResult.enemy.expReward;
-      const coinsGained = playerResult.enemy.coinReward;
-      let newPlayer = gainExp(playerResult.character, expGained);
-      newPlayer.coin += coinsGained;
+    const updatedEnemies = gameState.enemies.map(e => e.id === playerResult.enemy.id ? playerResult.enemy : e);
+    const allEnemiesDefeated = updatedEnemies.every(enemy => enemy.hp <= 0);
+    
+    if (allEnemiesDefeated) {
+      // Calculate total rewards from all enemies
+      const totalExp = updatedEnemies.reduce((sum, enemy) => sum + enemy.expReward, 0);
+      const totalCoins = updatedEnemies.reduce((sum, enemy) => sum + enemy.coinReward, 0);
+      let newPlayer = gainExp(playerResult.character, totalExp);
+      newPlayer.coin += totalCoins;
 
       // Auto level up if possible
       while (canLevelUp(newPlayer)) {
@@ -115,7 +117,7 @@ export const useBattle = (
         inBattle: false,
         isPlayerTurn: true,
         battleLog: [...prev.battleLog, {
-          message: `Victory! You gained ${expGained} EXP and ${coinsGained} coins!`,
+          message: `Victory! You gained ${totalExp} EXP and ${totalCoins} coins!`,
           type: 'system',
           timestamp: Date.now()
         }]
@@ -123,7 +125,7 @@ export const useBattle = (
       return;
     }
 
-    if (battleEndCheck.isDefeat) {
+    if (playerResult.character.hp <= 0) {
       const expLoss = Math.floor(gameState.player.exp * 0.1);
       let newPlayer = gainExp(playerResult.character, -expLoss);
       
@@ -151,31 +153,50 @@ export const useBattle = (
     // Switch to enemy turn
     setGameState(prev => ({ ...prev, isPlayerTurn: false }));
 
-    // Enemy action
+    // Enemy actions - ALL enemies attack
     setTimeout(() => {
       setGameState(prev => {
-        if (!prev.currentEnemy) return prev;
+        if (!prev.enemies || prev.enemies.length === 0) return prev;
 
-        const enemyAction = performEnemyAction(prev.player, prev.currentEnemy);
-        addBattleLogEntry({
-          message: enemyAction.logEntry.message,
-          type: enemyAction.logEntry.type,
-          timestamp: Date.now()
+        let newPlayer = { ...prev.player };
+        let newEnemies = [...prev.enemies];
+        const logEntries: BattleLogEntry[] = [];
+
+        // All alive enemies attack
+        newEnemies = newEnemies.map(enemy => {
+          if (enemy.hp <= 0) return enemy; // Skip dead enemies
+
+          const enemyAction = performEnemyAction(newPlayer, enemy);
+          logEntries.push({
+            message: enemyAction.logEntry.message,
+            type: enemyAction.logEntry.type,
+            timestamp: Date.now()
+          });
+
+          newPlayer = enemyAction.character;
+          return enemyAction.enemy;
         });
 
-        // Check if battle ended after enemy action
-        const battleEndCheck = checkBattleEnd(prev.player, enemyAction.enemy);
-        if (battleEndCheck.isVictory) {
-          const expGained = enemyAction.enemy.expReward;
-          const coinsGained = enemyAction.enemy.coinReward;
-          let newPlayer = gainExp(prev.player, expGained);
-          newPlayer.coin += coinsGained;
+        // Add all enemy action logs
+        logEntries.forEach(entry => addBattleLogEntry(entry));
+
+        // Check if all enemies are defeated
+        const allEnemiesDefeated = newEnemies.every(enemy => enemy.hp <= 0);
+        const playerDefeated = newPlayer.hp <= 0;
+
+        if (allEnemiesDefeated) {
+          // Calculate total rewards from all enemies
+          const totalExp = newEnemies.reduce((sum, enemy) => sum + enemy.expReward, 0);
+          const totalCoins = newEnemies.reduce((sum, enemy) => sum + enemy.coinReward, 0);
+          
+          let finalPlayer = gainExp(newPlayer, totalExp);
+          finalPlayer.coin += totalCoins;
 
           // Auto level up if possible
-          while (canLevelUp(newPlayer)) {
-            newPlayer = levelUp(newPlayer);
+          while (canLevelUp(finalPlayer)) {
+            finalPlayer = levelUp(finalPlayer);
             addBattleLogEntry({
-              message: `Level Up! Now level ${newPlayer.level}!`,
+              message: `Level Up! Now level ${finalPlayer.level}!`,
               type: 'system',
               timestamp: Date.now()
             });
@@ -183,31 +204,31 @@ export const useBattle = (
 
           return {
             ...prev,
-            player: newPlayer,
+            player: finalPlayer,
             currentEnemy: null,
             enemies: [],
             selectedEnemyId: null,
             inBattle: false,
             isPlayerTurn: true,
             battleLog: [...prev.battleLog, {
-              message: `Victory! You gained ${expGained} EXP and ${coinsGained} coins!`,
+              message: `Victory! You gained ${totalExp} EXP and ${totalCoins} coins!`,
               type: 'system',
               timestamp: Date.now()
             }]
           };
         }
 
-        if (battleEndCheck.isDefeat) {
-          const expLoss = Math.floor(prev.player.exp * 0.1);
-          let newPlayer = gainExp(prev.player, -expLoss);
+        if (playerDefeated) {
+          const expLoss = Math.floor(newPlayer.exp * 0.1);
+          let finalPlayer = gainExp(newPlayer, -expLoss);
           
           // Restore some HP/MP for next battle
-          newPlayer.hp = Math.floor(newPlayer.maxHp * 0.5);
-          newPlayer.mp = Math.floor(newPlayer.maxMp * 0.5);
+          finalPlayer.hp = Math.floor(finalPlayer.maxHp * 0.5);
+          finalPlayer.mp = Math.floor(finalPlayer.maxMp * 0.5);
 
           return {
             ...prev,
-            player: newPlayer,
+            player: finalPlayer,
             currentEnemy: null,
             enemies: [],
             selectedEnemyId: null,
@@ -221,11 +242,15 @@ export const useBattle = (
           };
         }
 
+        // Update current enemy to first alive enemy
+        const firstAliveEnemy = newEnemies.find(e => e.hp > 0);
+
         return {
           ...prev,
-          player: enemyAction.character,
-          currentEnemy: enemyAction.enemy,
-          enemies: prev.enemies.map(e => e.id === enemyAction.enemy.id ? enemyAction.enemy : e),
+          player: newPlayer,
+          enemies: newEnemies,
+          currentEnemy: firstAliveEnemy || null,
+          selectedEnemyId: firstAliveEnemy?.id || null,
           isPlayerTurn: true
         };
       });

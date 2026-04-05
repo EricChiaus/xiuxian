@@ -58,6 +58,7 @@ export interface Enemy {
   coinReward: number;
   hasMagic: boolean;
   hasHeal: boolean;
+  isElite?: boolean; // Elite enemy flag
 }
 
 export interface EnemyType {

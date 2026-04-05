@@ -8,8 +8,17 @@ export const enemyTypes: EnemyType[] = [
   { name: "骷髅怪", baseHp: 55, basePa: 10, basePd: 5, expReward: 22, coinReward: 11 }
 ];
 
-export const generateEnemy = (playerLevel: number, id?: string): Enemy => {
-  const enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+export const eliteEnemyTypes: EnemyType[] = [
+  { name: "精英小妖", baseHp: 100, basePa: 16, basePd: 6, expReward: 60, coinReward: 30 },
+  { name: "精英妖兽", baseHp: 80, basePa: 12, basePd: 4, expReward: 45, coinReward: 24 },
+  { name: "精英狼妖", baseHp: 120, basePa: 24, basePd: 8, expReward: 75, coinReward: 36 },
+  { name: "精英魔兵", baseHp: 160, basePa: 30, basePd: 12, expReward: 105, coinReward: 54 },
+  { name: "精英骷髅", baseHp: 110, basePa: 20, basePd: 10, expReward: 66, coinReward: 33 }
+];
+
+export const generateEnemy = (playerLevel: number, id?: string, isElite: boolean = false): Enemy => {
+  const enemyPool = isElite ? eliteEnemyTypes : enemyTypes;
+  const enemyType = enemyPool[Math.floor(Math.random() * enemyPool.length)];
   const levelVariation = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
   const enemyLevel = Math.max(1, playerLevel + levelVariation);
   const levelMultiplier = 1 + (enemyLevel - 1) * 0.1;
@@ -27,14 +36,18 @@ export const generateEnemy = (playerLevel: number, id?: string): Enemy => {
     expReward: Math.floor(enemyType.expReward * levelMultiplier),
     coinReward: Math.floor(enemyType.coinReward * levelMultiplier),
     hasMagic: Math.random() > 0.5,
-    hasHeal: Math.random() > 0.8
+    hasHeal: Math.random() > 0.8,
+    isElite: isElite
   };
 };
 
 export const generateMultipleEnemies = (playerLevel: number, count: number = 2): Enemy[] => {
   const enemies: Enemy[] = [];
+  const eliteChance = 0.2; // 20% chance for elite enemies
+  
   for (let i = 0; i < count; i++) {
-    enemies.push(generateEnemy(playerLevel, `enemy_${i}`));
+    const isElite = Math.random() < eliteChance;
+    enemies.push(generateEnemy(playerLevel, `enemy_${i}`, isElite));
   }
   return enemies;
 };
