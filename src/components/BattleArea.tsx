@@ -2,6 +2,7 @@ import React from 'react';
 import { Enemy, BattleLogEntry, BattleAction } from '../types/game';
 import EnemyTooltip from './EnemyTooltip';
 import { getPowerColor } from '../types/game';
+import { getCultivatorLevelName } from '../types/game';
 
 interface BattleAreaProps {
   inBattle: boolean;
@@ -98,8 +99,8 @@ const BattleArea: React.FC<BattleAreaProps> = ({
                         <circle cx="50" cy="50" r="35" fill="none" stroke="#8B0000" strokeWidth="0.5" opacity="0.2"/>
                       </svg>
                       <div className="absolute -top-2 -right-2 bg-red-800 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold">
-                        {enemy.level}
-                      </div>
+            {getCultivatorLevelName(enemy.level).charAt(0)}
+          </div>
                       {isSelected && (
                         <div className="absolute -top-2 -left-2 bg-yellow-500 text-black text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold">
                           ✓

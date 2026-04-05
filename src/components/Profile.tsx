@@ -1,5 +1,6 @@
 import React from 'react';
 import { Character } from '../types/game';
+import { getCultivatorLevelName } from '../types/game';
 
 interface Avatar {
   id: string;
@@ -156,7 +157,7 @@ const Profile: React.FC<ProfileProps> = ({ character, currentAvatar, onAvatarCha
               {renderAvatar(avatars.find(a => a.id === currentAvatar) || avatars[0], false)}
             </div>
             <div>
-              <div className="text-lg font-semibold text-amber-800">境界: {character.level}</div>
+              <div className="text-lg font-semibold text-amber-800">境界: {getCultivatorLevelName(character.level)}</div>
               <div className="text-sm text-amber-700">生命元气: {character.hp}/{character.maxHp}</div>
               <div className="text-sm text-amber-700">灵力: {character.mp}/{character.maxMp}</div>
               <div className="text-sm text-amber-700">修为: {character.exp}/{character.expToNext}</div>

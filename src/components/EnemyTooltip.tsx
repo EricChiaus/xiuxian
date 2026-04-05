@@ -1,6 +1,7 @@
 import React from 'react';
 import { Enemy } from '../types/game';
 import PowerDisplay from './PowerDisplay';
+import { getCultivatorLevelName } from '../types/game';
 
 interface EnemyTooltipProps {
   enemy: Enemy;
@@ -19,7 +20,7 @@ const EnemyTooltip: React.FC<EnemyTooltipProps> = ({ enemy, children }) => {
         <h3 className="font-bold text-red-400 mb-2">{enemy.name}</h3>
         
         <div className="text-xs space-y-1">
-          <div>等级: {enemy.level}</div>
+          <div>境界: {getCultivatorLevelName(enemy.level)} (Lv.{enemy.level})</div>
           <div>生命: {enemy.hp}/{enemy.maxHp}</div>
           <div>攻击: {enemy.pa} | 魔攻: {enemy.ma}</div>
           <div>防御: {enemy.pd} | 魔防: {enemy.md}</div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Character } from '../types/game';
 import PowerDisplay from './PowerDisplay';
+import { getCultivatorLevelName } from '../types/game';
 
 interface CharacterPanelProps {
   player: Character;
@@ -75,7 +76,7 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ player, onLevelUp, canL
           {renderAvatar()}
           {/* Cultivation level indicator */}
           <div className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold">
-            {player.level}
+            {getCultivatorLevelName(player.level).charAt(0)}
           </div>
         </div>
       </div>
