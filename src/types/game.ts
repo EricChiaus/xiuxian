@@ -105,8 +105,53 @@ export interface GameSaveData {
   lastSaveTime: number;
 }
 
-// Cultivator level names
+// Cultivator level names with sub-levels
 export const getCultivatorLevelName = (level: number): string => {
+  if (level >= 1 && level <= 9) {
+    const subLevel = level;
+    return `炼气期${subLevel}阶`;
+  }
+  if (level >= 10 && level <= 19) {
+    const subLevel = level - 9;
+    return `筑基期${subLevel}阶`;
+  }
+  if (level >= 20 && level <= 29) {
+    const subLevel = level - 19;
+    return `金丹期${subLevel}阶`;
+  }
+  if (level >= 30 && level <= 39) {
+    const subLevel = level - 29;
+    return `元婴期${subLevel}阶`;
+  }
+  if (level >= 40 && level <= 49) {
+    const subLevel = level - 39;
+    return `化神期${subLevel}阶`;
+  }
+  if (level >= 50 && level <= 59) {
+    const subLevel = level - 49;
+    return `炼虚期${subLevel}阶`;
+  }
+  if (level >= 60 && level <= 69) {
+    const subLevel = level - 59;
+    return `合体期${subLevel}阶`;
+  }
+  if (level >= 70 && level <= 79) {
+    const subLevel = level - 69;
+    return `大乘期${subLevel}阶`;
+  }
+  if (level >= 80 && level <= 89) {
+    const subLevel = level - 79;
+    return `渡劫期${subLevel}阶`;
+  }
+  if (level >= 90) {
+    const subLevel = level - 89;
+    return `大罗金仙${subLevel}阶`;
+  }
+  return '凡人';
+};
+
+// Get just the realm name (without sub-levels) for compact displays
+export const getCultivatorRealmName = (level: number): string => {
   if (level >= 1 && level <= 9) return '炼气期';
   if (level >= 10 && level <= 19) return '筑基期';
   if (level >= 20 && level <= 29) return '金丹期';

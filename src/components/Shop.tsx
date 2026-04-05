@@ -1,5 +1,6 @@
 import React from 'react';
 import { ShopItem } from '../types/game';
+import { getCultivatorLevelName } from '../types/game';
 
 interface ShopProps {
   shopItems: ShopItem[];
@@ -27,19 +28,7 @@ const Shop: React.FC<ShopProps> = ({ shopItems, playerCoins, playerLevel, onBuyI
           <span className="text-sm text-amber-700">
             修仙者等级: {playerLevel} | 
             <span className="font-bold text-red-900">
-              {(() => {
-                if (playerLevel >= 1 && playerLevel <= 9) return '炼气期';
-                if (playerLevel >= 10 && playerLevel <= 19) return '筑基期';
-                if (playerLevel >= 20 && playerLevel <= 29) return '金丹期';
-                if (playerLevel >= 30 && playerLevel <= 39) return '元婴期';
-                if (playerLevel >= 40 && playerLevel <= 49) return '化神期';
-                if (playerLevel >= 50 && playerLevel <= 59) return '炼虚期';
-                if (playerLevel >= 60 && playerLevel <= 69) return '合体期';
-                if (playerLevel >= 70 && playerLevel <= 79) return '大乘期';
-                if (playerLevel >= 80 && playerLevel <= 89) return '渡劫期';
-                if (playerLevel >= 90) return '大罗金仙';
-                return '凡人';
-              })()}
+              {getCultivatorLevelName(playerLevel)}
             </span>
           </span>
         </div>

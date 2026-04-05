@@ -81,6 +81,16 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ player, onLevelUp, canL
         </div>
       </div>
 
+      {/* Cultivation Level Display */}
+      <div className="text-center mb-4">
+        <div className="text-lg font-bold text-red-900 mb-1" style={{ fontFamily: 'serif' }}>
+          {getCultivatorLevelName(player.level)}
+        </div>
+        <div className="text-sm text-amber-700">
+          第 {player.level} 层
+        </div>
+      </div>
+
       {/* HP Bar - Vitality */}
       <div className="mb-3">
         <div className="text-sm text-amber-800 font-semibold mb-1">🩸 生命元气</div>
