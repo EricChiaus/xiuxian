@@ -24,7 +24,7 @@ export const useGame = () => {
   );
 
   // Shop and inventory system
-  const { buyItem, sellItem, useItem, refreshShop } = useShopInventory(
+  const { buyItem, sellItem, equipItem, unequipItem, refreshShop, getAllEquipment } = useShopInventory(
     gameState,
     setGameState,
     addBattleLogEntry
@@ -118,8 +118,10 @@ export const useGame = () => {
     resetGame,
     buyItem,
     sellItem,
-    useItem,
+    equipItem,
+    unequipItem,
     refreshShop,
-    selectEnemy
+    selectEnemy,
+    getAllEquipment
   };
 };
