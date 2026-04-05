@@ -1,4 +1,4 @@
-import { ShopItem, Equipment, getElementName } from '../types/game';
+import { ShopItem, Equipment, getElementName, getRarityName, getEquipmentTypeName } from '../types/game';
 import { generateRandomEquipment } from './equipment';
 
 export const generateShopItems = (playerLevel: number): ShopItem[] => {
@@ -13,7 +13,7 @@ export const generateShopItems = (playerLevel: number): ShopItem[] => {
     // Get all elements for display
     const elements = Object.entries(item.elements)
       .filter(([_, value]) => value > 0)
-      .map(([element, value]) => `${getElementName(element as any)} ${value}`)
+      .map(([element, value]) => `${getElementName(element as any)} ${Math.floor(value)}`)
       .join(', ');
     
     // Build stats description
@@ -27,14 +27,16 @@ export const generateShopItems = (playerLevel: number): ShopItem[] => {
     
     const statsText = stats.length > 0 ? stats.join(', ') : '无属性加成';
     const elementsText = elements || '无元素';
+    const rarityText = getRarityName(item.rarity);
+    const typeText = getEquipmentTypeName(item.type);
     
     return {
       id: item.id,
       name: item.name,
-      description: `${item.name} (等级 ${item.level})`,
+      description: `${item.name} (${typeText} - 等级 ${item.level})`,
       price: item.price,
       type: 'equipment',
-      effect: `${statsText} | ${elementsText}`
+      effect: `${rarityText} | ${statsText} | ${elementsText}`
     };
   });
 };
@@ -46,6 +48,7 @@ export const generateEquipment = (): Equipment[] => {
       id: 'sword1',
       name: 'Iron Sword',
       type: 'weapon',
+      rarity: 'common',
       level: 1,
       bonus: { pa: 5 },
       elements: {},
@@ -57,6 +60,7 @@ export const generateEquipment = (): Equipment[] => {
       id: 'sword2',
       name: 'Steel Sword',
       type: 'weapon',
+      rarity: 'uncommon',
       level: 2,
       bonus: { pa: 10 },
       elements: {},
@@ -68,6 +72,7 @@ export const generateEquipment = (): Equipment[] => {
       id: 'staff1',
       name: 'Wooden Staff',
       type: 'weapon',
+      rarity: 'common',
       level: 1,
       bonus: { ma: 5 },
       elements: {},
@@ -79,6 +84,7 @@ export const generateEquipment = (): Equipment[] => {
       id: 'staff2',
       name: 'Crystal Staff',
       type: 'weapon',
+      rarity: 'uncommon',
       level: 2,
       bonus: { ma: 12 },
       elements: {},
@@ -90,6 +96,7 @@ export const generateEquipment = (): Equipment[] => {
       id: 'armor1',
       name: 'Leather Armor',
       type: 'armor',
+      rarity: 'common',
       level: 1,
       bonus: { pd: 3 },
       elements: {},
@@ -101,6 +108,7 @@ export const generateEquipment = (): Equipment[] => {
       id: 'armor2',
       name: 'Iron Armor',
       type: 'armor',
+      rarity: 'uncommon',
       level: 2,
       bonus: { pd: 6 },
       elements: {},
@@ -112,6 +120,7 @@ export const generateEquipment = (): Equipment[] => {
       id: 'armor3',
       name: 'Robe',
       type: 'armor',
+      rarity: 'common',
       level: 1,
       bonus: { md: 4 },
       elements: {},
@@ -123,6 +132,7 @@ export const generateEquipment = (): Equipment[] => {
       id: 'armor4',
       name: 'Enchanted Robe',
       type: 'armor',
+      rarity: 'uncommon',
       level: 2,
       bonus: { md: 8 },
       elements: {},

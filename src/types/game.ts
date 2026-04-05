@@ -16,6 +16,11 @@ export interface Character {
   equippedItems: {
     weapon?: string;
     armor?: string;
+    helmet?: string;
+    boots?: string;
+    ring?: string;
+    necklace?: string;
+    accessory?: string;
   }; // Currently equipped items
   elements: Elements; // Elemental Elements
   elementResistance: ElementResistance; // Elemental resistance
@@ -24,7 +29,8 @@ export interface Character {
 export interface Equipment {
   id: string;
   name: string;
-  type: 'weapon' | 'armor' | 'accessory';
+  type: 'weapon' | 'armor' | 'accessory' | 'helmet' | 'boots' | 'ring' | 'necklace';
+  rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
   level: number; // Equipment level 1-5
   bonus: {
     pa?: number;
@@ -240,4 +246,40 @@ export const getElementMultiplier = (attackerElement: ElementType, defenderEleme
   if (attackerElement === 'yang' && defenderElement === 'yin') return 1.3; // Yang overcomes Yin
   
   return 1.0; // Neutral interaction
+};
+
+// Rarity utility functions
+export const getRarityColor = (rarity: string): string => {
+  switch (rarity) {
+    case 'common': return '#9CA3AF'; // Gray
+    case 'uncommon': return '#10B981'; // Green
+    case 'rare': return '#3B82F6'; // Blue
+    case 'epic': return '#8B5CF6'; // Purple
+    case 'legendary': return '#F59E0B'; // Orange
+    default: return '#9CA3AF';
+  }
+};
+
+export const getRarityName = (rarity: string): string => {
+  switch (rarity) {
+    case 'common': return '普通';
+    case 'uncommon': return '精良';
+    case 'rare': return '稀有';
+    case 'epic': return '史诗';
+    case 'legendary': return '传说';
+    default: return '普通';
+  }
+};
+
+export const getEquipmentTypeName = (type: string): string => {
+  switch (type) {
+    case 'weapon': return '武器';
+    case 'armor': return '护甲';
+    case 'helmet': return '头盔';
+    case 'boots': return '靴子';
+    case 'ring': return '戒指';
+    case 'necklace': return '项链';
+    case 'accessory': return '饰品';
+    default: return '装备';
+  }
 };
