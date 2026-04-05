@@ -165,7 +165,7 @@ export const useShopInventory = (
       
       // Store the actual equipment data permanently
       newPlayer.playerEquipment = {
-        ...newPlayer.playerEquipment,
+        ...prev.playerEquipment,  // Keep existing equipment!
         [itemId]: {
           ...purchasedEquipment,
           id: shopItem.id,
