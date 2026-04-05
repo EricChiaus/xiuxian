@@ -16,31 +16,33 @@ export const eliteEnemyTypes: EnemyType[] = [
   { name: "精英骷髅", baseHp: 110, basePa: 20, basePd: 10, expReward: 66, coinReward: 33 }
 ];
 
-const generateEnemyPower = (isElite: boolean): Partial<Elements> => {
+const generateEnemyElements = (isElite: boolean): Partial<Elements> => {
   const elements: Partial<Elements> = {};
-  const ElementTypes: ElementType[] = ['metal', 'wood', 'water', 'fire', 'earth', 'yin', 'yang'];
   
-  if (isElite) {
-    // Elite enemies can have up to 2 Elements
-    const powerCount = Math.random() < 0.7 ? 2 : 1;
-    for (let i = 0; i < powerCount; i++) {
-      const power = ElementTypes[Math.floor(Math.random() * ElementTypes.length)];
-      const value = Math.floor(Math.random() * 5) + 3; // 3-7 power
-      Elements[power] = value;
-    }
-  } else {
-    // Normal enemies can have at most 1 power (50% chance)
-    if (Math.random() < 0.5) {
-      const power = ElementTypes[Math.floor(Math.random() * ElementTypes.length)];
-      const value = Math.floor(Math.random() * 3) + 1; // 1-3 power
-      Elements[power] = value;
+  // Normal enemies: 30% chance for 1 element
+  // Elite enemies: 60% chance for 1-2 elements
+  const elementCount = isElite ? 
+    (Math.random() < 0.6 ? (Math.random() < 0.5 ? 1 : 2) : 0) :
+    (Math.random() < 0.3 ? 1 : 0);
+  
+  if (elementCount > 0) {
+    const elementTypes: ElementType[] = ['metal', 'wood', 'water', 'fire', 'earth', 'yin', 'yang'];
+    const availableElements = [...elementTypes];
+    
+    for (let i = 0; i < elementCount && availableElements.length > 0; i++) {
+      const randomIndex = Math.floor(Math.random() * availableElements.length);
+      const selectedElement = availableElements[randomIndex];
+      const value = Math.floor(Math.random() * 5) + 3; // 3-7 element value
+      
+      elements[selectedElement] = value;
+      availableElements.splice(randomIndex, 1);
     }
   }
   
-  return Elements;
+  return elements;
 };
 
-const generateEnemyResistance = (isElite: boolean, enemyelements: Partial<Elements>): Partial<ElementResistance> => {
+const generateEnemyResistance = (isElite: boolean, enemyElements: Partial<Elements>): Partial<ElementResistance> => {
   const resistance: Partial<ElementResistance> = {};
   
   // Enemies get resistance to their own power type
@@ -60,7 +62,7 @@ export const generateEnemy = (playerLevel: number, id?: string, isElite: boolean
   const levelMultiplier = 1 + (enemyLevel - 1) * 0.1;
   
   // Generate Elements and resistance
-  const enemyElements = generateEnemyPower(isElite);
+  const enemyElements = generateEnemyElements(isElite);
   const enemyResistance = generateEnemyResistance(isElite, enemyElements);
   
   return {

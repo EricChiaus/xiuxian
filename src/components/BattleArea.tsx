@@ -56,7 +56,7 @@ const BattleArea: React.FC<BattleAreaProps> = ({
               const isDefeated = enemy.hp <= 0;
               
               // Get enemy's highest power for coloring
-              const highestPower = Object.entries(enemy.Elements)
+              const highestPower = Object.entries(enemy.elements)
                 .filter(([_, value]) => value > 0)
                 .sort(([_, a], [__, b]) => b - a)[0];
               const powerColor = highestPower ? getElementColor(highestPower[0] as any) : '#8B0000';

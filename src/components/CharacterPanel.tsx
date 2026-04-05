@@ -158,8 +158,8 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ player, onLevelUp, canL
 
       {/* Elements Display */}
       <PowerDisplay
-        Elements={player.Elements}
-        ElementResistance={player.ElementResistance}
+        elements={player.elements}
+        elementResistance={player.elementResistance}
         title="修仙者之力"
         showResistance={true}
       />

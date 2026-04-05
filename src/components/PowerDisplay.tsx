@@ -9,16 +9,16 @@ interface PowerDisplayProps {
 }
 
 const PowerDisplay: React.FC<PowerDisplayProps> = ({ 
-  Elements, 
-  ElementResistance, 
+  elements, 
+  elementResistance, 
   title = "元素之力", 
   showResistance = true 
 }) => {
-  const ElementTypes: Array<keyof Elements> = ['metal', 'wood', 'water', 'fire', 'earth', 'yin', 'yang'];
+  const elementTypes: Array<keyof Elements> = ['metal', 'wood', 'water', 'fire', 'earth', 'yin', 'yang'];
   
-  // Ensure Elements and ElementResistance are defined
-  const safeElements = Elements || {};
-  const safeElementResistance = ElementResistance || {};
+  // Ensure elements and elementResistance are defined
+  const safeElements = elements || {};
+  const safeElementResistance = elementResistance || {};
   
   return (
     <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg p-3 border border-purple-300">
@@ -29,17 +29,17 @@ const PowerDisplay: React.FC<PowerDisplayProps> = ({
         <div>
           <div className="text-xs font-semibold text-purple-700 mb-1">力量:</div>
           <div className="flex flex-wrap gap-1">
-            {ElementTypes.map(power => {
-              const value = safeElements[power];
+            {elementTypes.map(element => {
+              const value = safeElements[element];
               if (!value || value === 0) return null;
               
               return (
                 <div
-                  key={power}
+                  key={element}
                   className="px-2 py-1 rounded text-xs font-bold text-white border border-gray-800"
-                  style={{ backgroundColor: getElementColor(power) }}
+                  style={{ backgroundColor: getElementColor(element) }}
                 >
-                  {getElementName(power)} {value}
+                  {getElementName(element)} {value}
                 </div>
               );
             })}
@@ -54,21 +54,21 @@ const PowerDisplay: React.FC<PowerDisplayProps> = ({
           <div>
             <div className="text-xs font-semibold text-purple-700 mb-1">抗性:</div>
             <div className="flex flex-wrap gap-1">
-              {ElementTypes.map(power => {
-                const value = safeElementResistance[power];
+              {elementTypes.map(element => {
+                const value = safeElementResistance[element];
                 if (!value || value === 0) return null;
                 
                 return (
                   <div
-                    key={power}
+                    key={element}
                     className="px-2 py-1 rounded text-xs font-bold border-2"
                     style={{ 
-                      backgroundColor: getElementColor(power) + '30',
-                      borderColor: getElementColor(power),
-                      color: getElementColor(power)
+                      backgroundColor: getElementColor(element) + '30',
+                      borderColor: getElementColor(element),
+                      color: getElementColor(element)
                     }}
                   >
-                    {getElementName(power)} {value}
+                    {getElementName(element)} {value}
                   </div>
                 );
               })}
