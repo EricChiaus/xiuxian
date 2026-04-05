@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { GameState, BattleLogEntry, BattleAction, ShopItem, Equipment } from '../types/game';
+import { GameState, BattleLogEntry, BattleAction, Equipment } from '../types/game';
 import { createInitialCharacter, calculateStats, canLevelUp, levelUp, gainExp, calculateRegenerationRates } from '../utils/character';
 import { generateEnemy } from '../utils/enemies';
 import { saveGame, loadGame, calculateOfflineExp, clearSavedGame } from '../utils/storage';
 import { performPlayerAction, performEnemyAction, checkBattleEnd } from '../utils/battle';
-import { generateShopItems, generateEquipment } from '../utils/shop';
+import { generateShopItems } from '../utils/shop';
 
 export const useGame = () => {
   const [gameState, setGameState] = useState<GameState>(() => {
@@ -313,19 +313,14 @@ export const useGame = () => {
   }, []);
 
   const buyItem = useCallback((itemId: string) => {
-    const item = gameState.shopItems.find(item => item.id === itemId);
+    const item = gameState.shopItems.find(shopItem => shopItem.id === itemId);
     if (!item || gameState.player.coin < item.price) return;
 
     setGameState(prev => {
       const newPlayer = { ...prev.player, coin: prev.player.coin - item.price };
       
-      // Add item to inventory
-      if (item.type === 'equipment') {
-        newPlayer.inventory = [...newPlayer.inventory, itemId];
-      } else {
-        // For consumables, don't add to inventory (use immediately)
-        newPlayer.coin = prev.player.coin - item.price;
-      }
+      // Add equipment to inventory
+      newPlayer.inventory = [...newPlayer.inventory, itemId];
 
       return {
         ...prev,

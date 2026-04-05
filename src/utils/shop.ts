@@ -68,32 +68,6 @@ export const generateShopItems = (): ShopItem[] => {
       price: 350,
       type: 'equipment',
       effect: '+8 Magic Defense'
-    },
-    
-    // Consumables
-    {
-      id: 'potion1',
-      name: 'Health Potion',
-      description: 'Restores 50 HP',
-      price: 30,
-      type: 'consumable',
-      effect: 'Restore 50 HP'
-    },
-    {
-      id: 'potion2',
-      name: 'Mana Potion',
-      description: 'Restores 30 MP',
-      price: 25,
-      type: 'consumable',
-      effect: 'Restore 30 MP'
-    },
-    {
-      id: 'potion3',
-      name: 'Full Heal Potion',
-      description: 'Fully restores HP and MP',
-      price: 100,
-      type: 'consumable',
-      effect: 'Full HP/MP restore'
     }
   ];
 };

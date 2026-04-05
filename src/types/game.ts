@@ -35,7 +35,7 @@ export interface ShopItem {
   name: string;
   description: string;
   price: number;
-  type: 'equipment' | 'consumable';
+  type: 'equipment';
   effect?: string;
 }
 
