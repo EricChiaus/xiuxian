@@ -156,10 +156,10 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ player, onLevelUp, canL
         </div>
       </div>
 
-      {/* Powers Display */}
+      {/* Elements Display */}
       <PowerDisplay
-        powers={player.powers}
-        powerResistance={player.powerResistance}
+        Elements={player.Elements}
+        ElementResistance={player.ElementResistance}
         title="修仙者之力"
         showResistance={true}
       />

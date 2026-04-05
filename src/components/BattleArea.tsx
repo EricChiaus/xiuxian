@@ -1,7 +1,7 @@
 import React from 'react';
 import { Enemy, BattleLogEntry, BattleAction } from '../types/game';
 import EnemyTooltip from './EnemyTooltip';
-import { getPowerColor } from '../types/game';
+import { getElementColor } from '../types/game';
 import { getCultivatorLevelName } from '../types/game';
 
 interface BattleAreaProps {
@@ -56,10 +56,10 @@ const BattleArea: React.FC<BattleAreaProps> = ({
               const isDefeated = enemy.hp <= 0;
               
               // Get enemy's highest power for coloring
-              const highestPower = Object.entries(enemy.powers)
+              const highestPower = Object.entries(enemy.Elements)
                 .filter(([_, value]) => value > 0)
                 .sort(([_, a], [__, b]) => b - a)[0];
-              const powerColor = highestPower ? getPowerColor(highestPower[0] as any) : '#8B0000';
+              const powerColor = highestPower ? getElementColor(highestPower[0] as any) : '#8B0000';
               
               return (
                 <div

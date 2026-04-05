@@ -16,8 +16,8 @@ export const createInitialCharacter = (): Character => ({
   inventory: [],
   avatar: 'male_cultivator_1', // Default avatar
   equippedItems: {}, // No items equipped initially
-  powers: { metal: 0, wood: 0, water: 0, fire: 0, earth: 0, yin: 0, yang: 0 }, // No powers initially
-  powerResistance: { metal: 0, wood: 0, water: 0, fire: 0, earth: 0, yin: 0, yang: 0 } // No resistance initially
+  elements: { metal: 0, wood: 0, water: 0, fire: 0, earth: 0, yin: 0, yang: 0 }, // No elements initially
+  elementResistance: { metal: 0, wood: 0, water: 0, fire: 0, earth: 0, yin: 0, yang: 0 } // No resistance initially
 });
 
 export const calculateStats = (character: Character): Character => {

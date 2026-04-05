@@ -37,10 +37,10 @@ const EnemyTooltip: React.FC<EnemyTooltipProps> = ({ enemy, children }) => {
             <div className="text-green-400">可以治疗</div>
           )}
           
-          {/* Powers and Resistance */}
+          {/* Elements and Resistance */}
           <PowerDisplay
-            powers={enemy.powers}
-            powerResistance={enemy.powerResistance}
+            Elements={enemy.Elements}
+            ElementResistance={enemy.ElementResistance}
             title=""
             showResistance={true}
           />

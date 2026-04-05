@@ -11,7 +11,7 @@ export const generateShopItems = (playerLevel: number): ShopItem[] => {
   
   return items.map(item => {
     // Get the highest power for display
-    const highestPower = Object.entries(item.powers)
+    const highestPower = Object.entries(item.Elements)
       .filter(([_, value]) => value > 0)
       .sort(([_, a], [__, b]) => b - a)[0];
     
@@ -35,8 +35,8 @@ export const generateEquipment = (): Equipment[] => {
       type: 'weapon',
       level: 1,
       bonus: { pa: 5 },
-      powers: {},
-      powerResistance: {},
+      elements: {},
+      elementResistance: {},
       price: 100,
       sellPrice: 50
     },
@@ -46,8 +46,8 @@ export const generateEquipment = (): Equipment[] => {
       type: 'weapon',
       level: 2,
       bonus: { pa: 10 },
-      powers: {},
-      powerResistance: {},
+      elements: {},
+      elementResistance: {},
       price: 250,
       sellPrice: 125
     },
@@ -57,8 +57,8 @@ export const generateEquipment = (): Equipment[] => {
       type: 'weapon',
       level: 1,
       bonus: { ma: 5 },
-      powers: {},
-      powerResistance: {},
+      elements: {},
+      elementResistance: {},
       price: 80,
       sellPrice: 40
     },
@@ -68,8 +68,8 @@ export const generateEquipment = (): Equipment[] => {
       type: 'weapon',
       level: 2,
       bonus: { ma: 12 },
-      powers: {},
-      powerResistance: {},
+      elements: {},
+      elementResistance: {},
       price: 200,
       sellPrice: 100
     },
@@ -79,8 +79,8 @@ export const generateEquipment = (): Equipment[] => {
       type: 'armor',
       level: 1,
       bonus: { pd: 3 },
-      powers: {},
-      powerResistance: {},
+      elements: {},
+      elementResistance: {},
       price: 120,
       sellPrice: 60
     },
@@ -90,8 +90,8 @@ export const generateEquipment = (): Equipment[] => {
       type: 'armor',
       level: 2,
       bonus: { pd: 6 },
-      powers: {},
-      powerResistance: {},
+      elements: {},
+      elementResistance: {},
       price: 300,
       sellPrice: 150
     },
@@ -101,8 +101,8 @@ export const generateEquipment = (): Equipment[] => {
       type: 'armor',
       level: 1,
       bonus: { md: 4 },
-      powers: {},
-      powerResistance: {},
+      elements: {},
+      elementResistance: {},
       price: 150,
       sellPrice: 75
     },
@@ -112,8 +112,8 @@ export const generateEquipment = (): Equipment[] => {
       type: 'armor',
       level: 2,
       bonus: { md: 8 },
-      powers: {},
-      powerResistance: {},
+      elements: {},
+      elementResistance: {},
       price: 350,
       sellPrice: 175
     }

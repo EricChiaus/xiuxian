@@ -17,7 +17,7 @@ export interface Character {
     weapon?: string;
     armor?: string;
   }; // Currently equipped items
-  elements: Elements; // Elemental powers
+  elements: Elements; // Elemental Elements
   elementResistance: ElementResistance; // Elemental resistance
 }
 
@@ -34,7 +34,7 @@ export interface Equipment {
     maxHp?: number;
     maxMp?: number;
   };
-  elements: Partial<Elements>; // Elemental powers this equipment provides
+  elements: Partial<Elements>; // Elemental Elements this equipment provides
   elementResistance: Partial<ElementResistance>; // Elemental resistance this equipment provides
   price: number;
   sellPrice: number;
@@ -64,7 +64,7 @@ export interface Enemy {
   hasMagic: boolean;
   hasHeal: boolean;
   isElite?: boolean; // Elite enemy flag
-  elements: Partial<Elements>; // Enemy elemental powers
+  elements: Partial<Elements>; // Enemy elemental Elements
   elementResistance: Partial<ElementResistance>; // Enemy elemental resistance
 }
 
