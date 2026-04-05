@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { 
   calculateRegenerationRates, 
   calculateTurnRegeneration, 
-  regenerateHpMp 
+  regenerateHpMpExp 
 } from '../utils/character';
 import { createInitialCharacter } from '../utils/character';
 
@@ -11,8 +11,9 @@ describe('Regeneration Utils', () => {
     it('should calculate base regeneration rates for level 1', () => {
       const rates = calculateRegenerationRates(1);
       
-      expect(rates.hpPerSecond).toBe(1.5);
-      expect(rates.mpPerSecond).toBe(0.6);
+      expect(rates.hpPerSecond).toBe(4.5);
+      expect(rates.mpPerSecond).toBe(1.8);
+      expect(rates.expPerSecond).toBe(0.1);
     });
 
     it('should increase regeneration rates with level', () => {
@@ -47,44 +48,49 @@ describe('Regeneration Utils', () => {
     });
   });
 
-  describe('regenerateHpMp', () => {
-    it('should regenerate HP and MP without exceeding max', () => {
+  describe('regenerateHpMpExp', () => {
+    it('should regenerate HP, MP, and EXP without exceeding max', () => {
       const character = { 
         ...createInitialCharacter(), 
         hp: 50, 
         mp: 20,
+        exp: 100,
         maxHp: 100,
         maxMp: 50
       };
       
-      const result = regenerateHpMp(character, 10, 5);
+      const result = regenerateHpMpExp(character, 10, 5, 2);
       
       expect(result.hp).toBe(60);
       expect(result.mp).toBe(25);
+      expect(result.exp).toBe(102);
     });
 
-    it('should not exceed max HP and MP', () => {
+    it('should not exceed max HP, MP, but EXP can keep growing', () => {
       const character = { 
         ...createInitialCharacter(), 
         hp: 95, 
         mp: 48,
+        exp: 150,
         maxHp: 100,
         maxMp: 50
       };
       
-      const result = regenerateHpMp(character, 10, 5);
+      const result = regenerateHpMpExp(character, 10, 5, 10);
       
       expect(result.hp).toBe(100);
       expect(result.mp).toBe(50);
+      expect(result.exp).toBe(160); // EXP keeps growing
     });
 
-    it('should handle full HP/MP case', () => {
+    it('should handle full HP/MP case but still gain EXP', () => {
       const character = createInitialCharacter();
       
-      const result = regenerateHpMp(character, 10, 5);
+      const result = regenerateHpMpExp(character, 10, 5, 1);
       
       expect(result.hp).toBe(character.maxHp);
       expect(result.mp).toBe(character.maxMp);
+      expect(result.exp).toBe(1); // EXP increases from 0
     });
   });
 });

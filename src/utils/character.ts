@@ -92,19 +92,22 @@ export const useMp = (character: Character, amount: number): Character => {
   return { ...character, mp: newMp };
 };
 
-export const regenerateHpMp = (character: Character, hpRegenRate: number, mpRegenRate: number): Character => {
+export const regenerateHpMpExp = (character: Character, hpRegenRate: number, mpRegenRate: number, expRegenRate: number): Character => {
   const newHp = Math.min(character.maxHp, character.hp + hpRegenRate);
   const newMp = Math.min(character.maxMp, character.mp + mpRegenRate);
-  return { ...character, hp: newHp, mp: newMp };
+  const newExp = character.exp + expRegenRate;
+  return { ...character, hp: newHp, mp: newMp, exp: newExp };
 };
 
-export const calculateRegenerationRates = (level: number): { hpPerSecond: number; mpPerSecond: number } => {
-  const baseHpRegen = 1.5; // Increased from 0.5 to 1.5 (3x faster)
-  const baseMpRegen = 0.6; // Increased from 0.2 to 0.6 (3x faster)
+export const calculateRegenerationRates = (level: number): { hpPerSecond: number; mpPerSecond: number; expPerSecond: number } => {
+  const baseHpRegen = 4.5; // 3x faster than previous (1.5)
+  const baseMpRegen = 1.8; // 3x faster than previous (0.6)
+  const baseExpRate = 0.1; // New: 0.1 EXP per second when idle
   
   return {
-    hpPerSecond: baseHpRegen + (level - 1) * 0.3, // Increased from 0.1 to 0.3
-    mpPerSecond: baseMpRegen + (level - 1) * 0.15 // Increased from 0.05 to 0.15
+    hpPerSecond: baseHpRegen + (level - 1) * 0.9, // 3x faster scaling
+    mpPerSecond: baseMpRegen + (level - 1) * 0.45, // 3x faster scaling
+    expPerSecond: baseExpRate + (level - 1) * 0.02 // EXP scales with level
   };
 };
 

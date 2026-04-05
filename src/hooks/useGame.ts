@@ -61,14 +61,16 @@ export const useGame = () => {
         const timeDiff = (Date.now() - prev.lastRegenerationTime) / 1000; // Convert to seconds
         const hpRegen = Math.floor(regenRates.hpPerSecond * timeDiff);
         const mpRegen = Math.floor(regenRates.mpPerSecond * timeDiff);
+        const expRegen = Math.floor(regenRates.expPerSecond * timeDiff);
         
         const newHp = Math.min(prev.player.maxHp, prev.player.hp + hpRegen);
         const newMp = Math.min(prev.player.maxMp, prev.player.mp + mpRegen);
+        const newExp = prev.player.exp + expRegen;
         
-        if (newHp > prev.player.hp || newMp > prev.player.mp) {
+        if (newHp > prev.player.hp || newMp > prev.player.mp || newExp > prev.player.exp) {
           return {
             ...prev,
-            player: { ...prev.player, hp: newHp, mp: newMp },
+            player: { ...prev.player, hp: newHp, mp: newMp, exp: newExp },
             lastRegenerationTime: Date.now()
           };
         }
@@ -118,6 +120,19 @@ export const useGame = () => {
         type: 'system',
         timestamp: Date.now()
       });
+    }
+
+    // Check for level up from idle EXP gain
+    if (playerResult.character.exp >= playerResult.character.expToNext) {
+      while (canLevelUp(playerResult.character)) {
+        const leveledUpCharacter = levelUp(playerResult.character);
+        addBattleLogEntry({
+          message: `Level Up! Now level ${leveledUpCharacter.level}!`,
+          type: 'system',
+          timestamp: Date.now()
+        });
+        playerResult.character = leveledUpCharacter;
+      }
     }
 
     // Check if battle ended after player action

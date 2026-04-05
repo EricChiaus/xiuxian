@@ -1,6 +1,6 @@
 import { Character, Enemy, BattleLogEntry, BattleAction } from '../types/game';
 import { calculateDamage, calculateHeal, chooseEnemyAction } from './enemies';
-import { restoreHp, useMp, regenerateHpMp, calculateTurnRegeneration } from './character';
+import { restoreHp, useMp, regenerateHpMpExp, calculateTurnRegeneration } from './character';
 
 export const performPlayerAction = (
   character: Character,
@@ -47,7 +47,7 @@ export const performPlayerAction = (
 
   // Apply turn-based regeneration after player action
   const turnRegen = calculateTurnRegeneration(character.level);
-  newCharacter = regenerateHpMp(newCharacter, turnRegen.hpRegen, turnRegen.mpRegen);
+  newCharacter = regenerateHpMpExp(newCharacter, turnRegen.hpRegen, turnRegen.mpRegen, 0);
 
   return {
     character: newCharacter,

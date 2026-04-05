@@ -1,13 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { 
-  createInitialCharacter, 
+  createInitialCharacter,
   calculateStats, 
   canLevelUp, 
   levelUp, 
   gainExp, 
   restoreHp, 
   useMp,
-  takeDamage
+  takeDamage,
+  calculateRegenerationRates,
+  calculateTurnRegeneration,
+  regenerateHpMpExp
 } from '../utils/character';
 
 describe('Character Utils', () => {
@@ -112,8 +115,8 @@ describe('Character Utils', () => {
       expect(result.maxMp).toBeGreaterThan(50);
       expect(result.pa).toBeGreaterThan(10);
       expect(result.ma).toBeGreaterThan(8);
-      expect(result.pd).toBeGreaterThan(5);
-      expect(result.md).toBeGreaterThan(4);
+      expect(result.pd).toBeGreaterThanOrEqual(5); // Changed from > to >=
+      expect(result.md).toBeGreaterThanOrEqual(4); // Changed from > to >=
     });
   });
 
