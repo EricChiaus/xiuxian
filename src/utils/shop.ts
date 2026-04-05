@@ -1,4 +1,4 @@
-import { ShopItem, Equipment } from '../types/game';
+import { ShopItem, Equipment, getElementName } from '../types/game';
 import { generateRandomEquipment } from './equipment';
 
 export const generateShopItems = (playerLevel: number): ShopItem[] => {
@@ -10,18 +10,31 @@ export const generateShopItems = (playerLevel: number): ShopItem[] => {
   }
   
   return items.map(item => {
-    // Get the highest element for display
-    const highestElement = Object.entries(item.elements)
+    // Get all elements for display
+    const elements = Object.entries(item.elements)
       .filter(([_, value]) => value > 0)
-      .sort(([_, a], [__, b]) => (b as number) - (a as number))[0];
+      .map(([element, value]) => `${getElementName(element as any)} ${value}`)
+      .join(', ');
+    
+    // Build stats description
+    const stats = [];
+    if (item.bonus.pa) stats.push(`物攻 +${item.bonus.pa}`);
+    if (item.bonus.ma) stats.push(`魔攻 +${item.bonus.ma}`);
+    if (item.bonus.pd) stats.push(`物防 +${item.bonus.pd}`);
+    if (item.bonus.md) stats.push(`魔防 +${item.bonus.md}`);
+    if (item.bonus.maxHp) stats.push(`生命 +${item.bonus.maxHp}`);
+    if (item.bonus.maxMp) stats.push(`法力 +${item.bonus.maxMp}`);
+    
+    const statsText = stats.length > 0 ? stats.join(', ') : '无属性加成';
+    const elementsText = elements || '无元素';
     
     return {
       id: item.id,
       name: item.name,
-      description: `${item.name} (Level ${item.level})${highestElement ? ` - ${highestElement[0]} ${highestElement[1]}` : ''}`,
+      description: `${item.name} (等级 ${item.level})`,
       price: item.price,
       type: 'equipment',
-      effect: `Power: ${item.bonus.pa || item.bonus.ma || 0}${highestElement ? ` (${highestElement[0]} ${highestElement[1]})` : ''}`
+      effect: `${statsText} | ${elementsText}`
     };
   });
 };
