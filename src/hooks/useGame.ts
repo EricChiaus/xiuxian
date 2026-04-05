@@ -66,10 +66,12 @@ export const useGame = () => {
         const timeDiff = (Date.now() - prev.lastRegenerationTime) / 1000; // Convert to seconds
         const hpRegen = Math.floor(regenRates.hpPerSecond * timeDiff);
         const mpRegen = Math.floor(regenRates.mpPerSecond * timeDiff);
-        const expRegen = Math.floor(regenRates.expPerSecond * timeDiff);
         
         const newHp = Math.min(prev.player.maxHp, prev.player.hp + hpRegen);
         const newMp = Math.min(prev.player.maxMp, prev.player.mp + mpRegen);
+        
+        // Stop EXP regeneration when at max level
+        const expRegen = prev.player.level >= 99 ? 0 : Math.floor(regenRates.expPerSecond * timeDiff);
         const newExp = prev.player.exp + expRegen;
         
         if (newHp > prev.player.hp || newMp > prev.player.mp || newExp > prev.player.exp) {
@@ -347,7 +349,7 @@ export const useGame = () => {
     setGameState(prev => {
       const newPlayer = { 
         ...prev.player, 
-        coin: prev.player.coin + item.sellPrice,
+        coin: prev.player.coin + Math.floor(item.price / 2), // Sell for half price
         inventory: prev.player.inventory.filter(id => id !== itemId)
       };
 
@@ -358,7 +360,7 @@ export const useGame = () => {
     });
 
     addBattleLogEntry({
-      message: `Sold item for ${item.sellPrice} 🪙!`,
+      message: `Sold item for ${Math.floor(item.price / 2)} 🪙!`,
       type: 'system',
       timestamp: Date.now()
     });
