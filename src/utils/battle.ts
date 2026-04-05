@@ -24,7 +24,7 @@ export const performPlayerAction = (
       let damageType = 'physical';
       
       // Apply power damage if player has Elements
-      if (playerPower.element && playerPower.value > 0) {
+      if (playerPower.element && playerPower.value > 0 && enemy.elementResistance) {
         powerDamage = playerPower.value;
         
         // Calculate power multiplier based on element interaction
@@ -66,7 +66,7 @@ export const performPlayerAction = (
       let powerMagicBonus = 0;
       
       // Apply power bonus to magic if player has wood or water Elements
-      if (magicPower.element && (magicPower.element === 'wood' || magicPower.element === 'water')) {
+      if (magicPower.element && (magicPower.element === 'wood' || magicPower.element === 'water') && enemy.elementResistance) {
         powerMagicBonus = Math.floor(magicPower.value * 0.5); // 50% of power value as bonus
         
         // Calculate power multiplier based on element interaction
@@ -156,7 +156,7 @@ export const performEnemyAction = (
       let powerDamage = 0;
       
       // Apply power damage if enemy has Elements
-      if (enemyPower.element && enemyPower.value > 0) {
+      if (enemyPower.element && enemyPower.value > 0 && character.elementResistance) {
         powerDamage = enemyPower.value;
         
         // Calculate power multiplier based on element interaction
@@ -192,7 +192,7 @@ export const performEnemyAction = (
         let powerMagicBonus = 0;
         
         // Apply power bonus to magic if enemy has wood or water Elements
-        if (magicPower.element && (magicPower.element === 'wood' || magicPower.element === 'water')) {
+        if (magicPower.element && (magicPower.element === 'wood' || magicPower.element === 'water') && character.elementResistance) {
           powerMagicBonus = Math.floor(magicPower.value * 0.5); // 50% of power value as bonus
           
           // Calculate power multiplier based on element interaction
