@@ -1,16 +1,13 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { 
   createInitialCharacter,
-  calculateStats, 
-  canLevelUp, 
-  levelUp, 
-  gainExp, 
-  restoreHp, 
+  levelUp,
+  gainExp,
+  canLevelUp,
+  calculateStats,
+  restoreHp,
   useMp,
-  takeDamage,
-  calculateRegenerationRates,
-  calculateTurnRegeneration,
-  regenerateHpMpExp
+  takeDamage
 } from '../utils/character';
 
 describe('Character Utils', () => {
