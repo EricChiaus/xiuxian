@@ -44,6 +44,7 @@ const Inventory: React.FC<InventoryProps> = ({
   const getStatComparison = (item: Equipment, equippedItem?: Equipment) => {
     const comparison: { [key: string]: { current: number; new: number } } = {};
     
+    // Compare stats
     if (item.bonus.pa) {
       comparison.pa = {
         current: equippedItem?.bonus.pa || 0,
@@ -81,6 +82,17 @@ const Inventory: React.FC<InventoryProps> = ({
       };
     }
     
+    // Compare elements
+    Object.entries(item.elements).forEach(([element, value]) => {
+      if (value > 0) {
+        const currentElementValue = equippedItem?.elements[element as keyof typeof item.elements] || 0;
+        comparison[element] = {
+          current: currentElementValue,
+          new: value
+        };
+      }
+    });
+    
     return comparison;
   };
 
@@ -88,16 +100,23 @@ const Inventory: React.FC<InventoryProps> = ({
   const formatStatComparison = (comparison: ReturnType<typeof getStatComparison>) => {
     const lines: string[] = [];
     
+    const statNames: { [key: string]: string } = {
+      pa: '物攻',
+      ma: '魔攻',
+      pd: '物防',
+      md: '魔防',
+      maxHp: '生命',
+      maxMp: '法力',
+      metal: '金',
+      wood: '木',
+      water: '水',
+      fire: '火',
+      earth: '土',
+      yin: '阴',
+      yang: '阳'
+    };
+    
     Object.entries(comparison).forEach(([stat, values]) => {
-      const statNames: { [key: string]: string } = {
-        pa: '物攻',
-        ma: '魔攻',
-        pd: '物防',
-        md: '魔防',
-        maxHp: '生命',
-        maxMp: '法力'
-      };
-      
       const diff = values.new - values.current;
       const arrow = diff > 0 ? '↑' : diff < 0 ? '↓' : '=';
       const color = diff > 0 ? 'text-green-600' : diff < 0 ? 'text-red-600' : 'text-gray-600';

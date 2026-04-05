@@ -22,6 +22,7 @@ export interface Character {
     necklace?: string;
     accessory?: string;
   }; // Currently equipped items
+  playerEquipment: { [itemId: string]: Equipment }; // Stores actual equipment data for purchased items
   elements: Elements; // Elemental Elements
   elementResistance: ElementResistance; // Elemental resistance
 }

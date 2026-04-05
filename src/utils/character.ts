@@ -5,18 +5,19 @@ export const createInitialCharacter = (): Character => ({
   maxHp: 100,
   mp: 50,
   maxMp: 50,
-  pa: 10,  // Physical Attack
-  ma: 8,   // Magic Attack
-  pd: 5,   // Physical Defense
-  md: 5,   // Magic Defense
+  pa: 10 + Math.floor((1 - 1) * 1.5), // Level 1 base stats
+  ma: 8 + Math.floor((1 - 1) * 1.2),
+  pd: 5 + Math.floor((1 - 1) * 0.8),
+  md: 5 + Math.floor((1 - 1) * 0.8),
   level: 1,
   exp: 0,
   expToNext: 100,
-  coin: 0,
+  coin: 100,
   inventory: [],
-  avatar: 'male_cultivator_1', // Default avatar
+  avatar: 'avatar1',
   equippedItems: {}, // No items equipped initially
-  elements: { metal: 0, wood: 0, water: 0, fire: 0, earth: 0, yin: 0, yang: 0 }, // No elements initially
+  playerEquipment: {}, // No purchased equipment initially
+  elements: { metal: 0, wood: 0, water: 0, fire: 0, earth: 0, yin: 0, yang: 0 }, // No elemental affinity initially
   elementResistance: { metal: 0, wood: 0, water: 0, fire: 0, earth: 0, yin: 0, yang: 0 } // No resistance initially
 });
 
