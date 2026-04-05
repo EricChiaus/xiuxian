@@ -1,10 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
-import { GameState, BattleLogEntry, BattleAction, Equipment } from '../types/game';
+import { GameState, BattleLogEntry, BattleAction, Character, Enemy } from '../types/game';
 import { createInitialCharacter, calculateStats, canLevelUp, levelUp, gainExp, calculateRegenerationRates } from '../utils/character';
 import { generateEnemy } from '../utils/enemies';
 import { saveGame, loadGame, calculateOfflineExp, clearSavedGame } from '../utils/storage';
-import { performPlayerAction, performEnemyAction, checkBattleEnd } from '../utils/battle';
 import { generateShopItems } from '../utils/shop';
+import { useGameCore } from './useGameCore';
+import { useSave } from './useSave';
+import { useShopLogic } from './useShop';
+import { useInventoryLogic } from './useInventory';
+import { useBattleLogic } from './useBattle';
 
 export const useGame = () => {
   const [gameState, setGameState] = useState<GameState>(() => {
@@ -200,83 +204,8 @@ export const useGame = () => {
     // Enemy action
     setTimeout(() => {
       setGameState(prev => {
-        if (!prev.currentEnemy) return prev;
-
-        const enemyResult = performEnemyAction(playerResult.character, prev.currentEnemy);
-        const newBattleLog = [...prev.battleLog, enemyResult.logEntry];
-
-        // Check if battle ended after enemy action
-        const finalBattleCheck = checkBattleEnd(enemyResult.character, enemyResult.enemy);
-        
-        if (finalBattleCheck.isVictory) {
-          const expGained = enemyResult.enemy.expReward;
-          const coinsGained = enemyResult.enemy.coinReward;
-          let newPlayer = gainExp(enemyResult.character, expGained);
-          newPlayer.coin += coinsGained;
-
-          // Auto level up if possible
-          while (canLevelUp(newPlayer)) {
-            newPlayer = levelUp(newPlayer);
-            newBattleLog.push({
-              message: `Level Up! Now level ${newPlayer.level}!`,
-              type: 'system',
-              timestamp: Date.now()
-            });
-          }
-
-          newBattleLog.push({
-            message: `Victory! You gained ${expGained} EXP and ${coinsGained} coins!`,
-            type: 'system',
-            timestamp: Date.now()
-          });
-
-          return {
-            ...prev,
-            player: newPlayer,
-            currentEnemy: null,
-            inBattle: false,
-            battleLog: newBattleLog
-          };
-        }
-
-        if (finalBattleCheck.isDefeat) {
-          const expLoss = Math.floor(playerResult.character.exp * 0.1);
-          let newPlayer = gainExp(enemyResult.character, -expLoss);
-          
-          // Restore some HP/MP for next battle
-          newPlayer.hp = Math.floor(newPlayer.maxHp * 0.5);
-          newPlayer.mp = Math.floor(newPlayer.maxMp * 0.5);
-
-          newBattleLog.push({
-            message: `Defeat! You lost ${expLoss} EXP!`,
-            type: 'system',
-            timestamp: Date.now()
-          });
-
-          return {
-            ...prev,
-            player: newPlayer,
-            currentEnemy: null,
-            inBattle: false,
-            battleLog: newBattleLog
-          };
-        }
-
-        return {
-          ...prev,
-          player: enemyResult.character,
-          currentEnemy: enemyResult.enemy,
-          battleLog: newBattleLog
-        };
-      });
-    }, 1000);
-
-    setGameState(prev => ({
-      ...prev,
-      player: playerResult.character,
-      currentEnemy: playerResult.enemy
     }));
-  }, [gameState.inBattle, gameState.currentEnemy, gameState.player.exp, addBattleLogEntry]);
+  }, [gameState.player.level]);
 
   const manualLevelUp = useCallback(() => {
     if (!canLevelUp(gameState.player)) return;
@@ -286,11 +215,11 @@ export const useGame = () => {
     setGameState(prev => ({
       ...prev,
       player: newPlayer,
-      battleLog: [...prev.battleLog, {
+      battleLog: [...prev.battleLog, addBattleLogEntry({
         message: `Level Up! Now level ${newPlayer.level}!`,
         type: 'system',
         timestamp: Date.now()
-      }]
+      })]
     }));
   }, [gameState.player]);
 
@@ -312,96 +241,6 @@ export const useGame = () => {
       playerEquipment: []
     });
   }, []);
-
-  const buyItem = useCallback((itemId: string) => {
-    const item = gameState.shopItems.find(shopItem => shopItem.id === itemId);
-    if (!item || gameState.player.coin < item.price) return;
-
-    setGameState(prev => {
-      const newPlayer = { ...prev.player, coin: prev.player.coin - item.price };
-      
-      // Add equipment to inventory
-      newPlayer.inventory = [...newPlayer.inventory, itemId];
-
-      return {
-        ...prev,
-        player: newPlayer
-      };
-    });
-
-    addBattleLogEntry({
-      message: `Purchased ${item.name} for ${item.price} 🪙!`,
-      type: 'system',
-      timestamp: Date.now()
-    });
-  }, [gameState.shopItems, gameState.player.coin, gameState.player.inventory]);
-
-  const sellItem = useCallback((itemId: string) => {
-    if (!gameState.player.inventory.includes(itemId)) return;
-
-    const item = gameState.shopItems.find(shopItem => shopItem.id === itemId);
-    if (!item) return;
-
-    setGameState(prev => {
-      const newPlayer = { 
-        ...prev.player, 
-        coin: prev.player.coin + Math.floor(item.price / 2), // Sell for half price
-        inventory: prev.player.inventory.filter(id => id !== itemId)
-      };
-
-      return {
-        ...prev,
-        player: newPlayer
-      };
-    });
-
-    addBattleLogEntry({
-      message: `Sold item for ${Math.floor(item.price / 2)} 🪙!`,
-      type: 'system',
-      timestamp: Date.now()
-    });
-  }, [gameState.player.inventory, gameState.shopItems]);
-
-  const useItem = useCallback((itemId: string) => {
-    if (!gameState.player.inventory.includes(itemId)) return;
-
-    let newPlayer = { ...gameState.player };
-    let logMessage = '';
-
-    switch (itemId) {
-      case 'potion1':
-        newPlayer.hp = Math.min(newPlayer.maxHp, newPlayer.hp + 50);
-        logMessage = 'Used Health Potion! Restored 50 HP!';
-        break;
-      case 'potion2':
-        newPlayer.mp = Math.min(newPlayer.maxMp, newPlayer.mp + 30);
-        logMessage = 'Used Mana Potion! Restored 30 MP!';
-        break;
-      case 'potion3':
-        newPlayer.hp = newPlayer.maxHp;
-        newPlayer.mp = newPlayer.maxMp;
-        logMessage = 'Used Full Heal Potion! Fully restored HP and MP!';
-        break;
-      default:
-        // Equipment items - would implement equip logic here
-        return;
-    }
-
-    if (logMessage) {
-      newPlayer.inventory = newPlayer.inventory.filter(id => id !== itemId);
-      
-      setGameState(prev => ({
-        ...prev,
-        player: newPlayer
-      }));
-
-      addBattleLogEntry({
-        message: logMessage,
-        type: 'system',
-        timestamp: Date.now()
-      });
-    }
-  }, [gameState.player.inventory]);
 
   return {
     gameState,
