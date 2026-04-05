@@ -16,6 +16,10 @@ const PowerDisplay: React.FC<PowerDisplayProps> = ({
 }) => {
   const powerTypes: Array<keyof Powers> = ['metal', 'wood', 'water', 'fire', 'earth', 'yin', 'yang'];
   
+  // Ensure powers and powerResistance are defined
+  const safePowers = powers || {};
+  const safePowerResistance = powerResistance || {};
+  
   return (
     <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg p-3 border border-purple-300">
       <h4 className="text-sm font-bold text-purple-900 mb-2">{title}</h4>
@@ -26,7 +30,7 @@ const PowerDisplay: React.FC<PowerDisplayProps> = ({
           <div className="text-xs font-semibold text-purple-700 mb-1">力量:</div>
           <div className="flex flex-wrap gap-1">
             {powerTypes.map(power => {
-              const value = powers[power];
+              const value = safePowers[power];
               if (!value || value === 0) return null;
               
               return (
@@ -39,7 +43,7 @@ const PowerDisplay: React.FC<PowerDisplayProps> = ({
                 </div>
               );
             })}
-            {Object.values(powers).every(v => !v || v === 0) && (
+            {Object.values(safePowers).every(v => !v || v === 0) && (
               <div className="text-xs text-gray-500">无</div>
             )}
           </div>
@@ -51,7 +55,7 @@ const PowerDisplay: React.FC<PowerDisplayProps> = ({
             <div className="text-xs font-semibold text-purple-700 mb-1">抗性:</div>
             <div className="flex flex-wrap gap-1">
               {powerTypes.map(power => {
-                const value = powerResistance[power];
+                const value = safePowerResistance[power];
                 if (!value || value === 0) return null;
                 
                 return (
@@ -68,7 +72,7 @@ const PowerDisplay: React.FC<PowerDisplayProps> = ({
                   </div>
                 );
               })}
-            {Object.values(powerResistance).every(v => !v || v === 0) && (
+            {Object.values(safePowerResistance).every(v => !v || v === 0) && (
               <div className="text-xs text-gray-500">无</div>
             )}
             </div>
