@@ -1,5 +1,6 @@
 import React from 'react';
 import { Enemy, BattleLogEntry, BattleAction } from '../types/game';
+import EnemyTooltip from './EnemyTooltip';
 
 interface BattleAreaProps {
   inBattle: boolean;
@@ -97,9 +98,11 @@ const BattleArea: React.FC<BattleAreaProps> = ({
                   </div>
                   
                   <div className="text-center">
-                    <div className={`text-lg font-bold mb-2 ${isDefeated ? 'text-gray-500 line-through' : 'text-red-900'}`} style={{ fontFamily: 'serif' }}>
-                      👹 {enemy.name} {isDefeated && '(已击败)'}
-                    </div>
+                    <EnemyTooltip enemy={enemy}>
+                      <div className={`text-lg font-bold mb-2 ${isDefeated ? 'text-gray-500 line-through' : 'text-red-900'}`} style={{ fontFamily: 'serif' }}>
+                        👹 {enemy.name} {isDefeated && '(已击败)'}
+                      </div>
+                    </EnemyTooltip>
                     
                     {/* Enemy HP Bar */}
                     <div className="mb-2">

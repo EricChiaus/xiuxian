@@ -1,6 +1,7 @@
-import { Character, Enemy, BattleLogEntry, BattleAction } from '../types/game';
+import { Character, Enemy, BattleAction, getPowerMultiplier, BattleLogEntry } from '../types/game';
 import { calculateDamage, calculateHeal, chooseEnemyAction } from './enemies';
 import { restoreHp, useMp, regenerateHpMpExp, calculateTurnRegeneration } from './character';
+import { getHighestPower } from './equipment';
 
 export const performPlayerAction = (
   character: Character,
@@ -14,9 +15,40 @@ export const performPlayerAction = (
 
   switch (action) {
     case 'attack':
-      const damage = calculateDamage(character.pa, enemy.pd, 5);
-      newEnemy.hp = Math.max(0, newEnemy.hp - damage);
-      message = `You attack for ${damage} damage!`;
+      // Get player's highest power
+      const playerPower = getHighestPower(character.powers);
+      const enemyPower = getHighestPower(enemy.powers);
+      
+      let baseDamage = calculateDamage(character.pa, enemy.pd, 5);
+      let powerDamage = 0;
+      let damageType = 'physical';
+      
+      // Apply power damage if player has powers
+      if (playerPower.power && playerPower.value > 0) {
+        powerDamage = playerPower.value;
+        
+        // Calculate power multiplier based on element interaction
+        let powerMultiplier = 1.0;
+        if (enemyPower.power) {
+          powerMultiplier = getPowerMultiplier(playerPower.power, enemyPower.power);
+        }
+        
+        // Apply enemy resistance to the power type
+        const resistance = enemy.powerResistance[playerPower.power] || 0;
+        const resistanceReduction = Math.min(0.5, resistance * 0.05); // Max 50% reduction
+        
+        powerDamage = Math.floor(powerDamage * powerMultiplier * (1 - resistanceReduction));
+        damageType = `${playerPower.power}`;
+      }
+      
+      const totalDamage = baseDamage + powerDamage;
+      newEnemy.hp = Math.max(0, newEnemy.hp - totalDamage);
+      
+      if (powerDamage > 0) {
+        message = `You attack for ${baseDamage} damage + ${powerDamage} ${damageType} power damage!`;
+      } else {
+        message = `You attack for ${totalDamage} damage!`;
+      }
       break;
 
     case 'magic':
@@ -25,10 +57,40 @@ export const performPlayerAction = (
         logType = 'system';
         return { character: newCharacter, enemy: newEnemy, logEntry: { message, type: logType, timestamp: Date.now() } };
       }
-      const magicDamage = calculateDamage(character.ma, enemy.md, 8);
-      newEnemy.hp = Math.max(0, newEnemy.hp - magicDamage);
+      
+      // Get player's highest power for magic enhancement
+      const magicPower = getHighestPower(character.powers);
+      const enemyMagicPower = getHighestPower(enemy.powers);
+      
+      let baseMagicDamage = calculateDamage(character.ma, enemy.md, 8);
+      let powerMagicBonus = 0;
+      
+      // Apply power bonus to magic if player has wood or water powers
+      if (magicPower.power && (magicPower.power === 'wood' || magicPower.power === 'water')) {
+        powerMagicBonus = Math.floor(magicPower.value * 0.5); // 50% of power value as bonus
+        
+        // Calculate power multiplier based on element interaction
+        let powerMultiplier = 1.0;
+        if (enemyMagicPower.power) {
+          powerMultiplier = getPowerMultiplier(magicPower.power, enemyMagicPower.power);
+        }
+        
+        // Apply enemy resistance to the power type
+        const resistance = enemy.powerResistance[magicPower.power] || 0;
+        const resistanceReduction = Math.min(0.5, resistance * 0.05); // Max 50% reduction
+        
+        powerMagicBonus = Math.floor(powerMagicBonus * powerMultiplier * (1 - resistanceReduction));
+      }
+      
+      const totalMagicDamage = baseMagicDamage + powerMagicBonus;
+      newEnemy.hp = Math.max(0, newEnemy.hp - totalMagicDamage);
       newCharacter = useMp(newCharacter, 10);
-      message = `You cast magic for ${magicDamage} damage! (-10 MP)`;
+      
+      if (powerMagicBonus > 0) {
+        message = `You cast magic for ${baseMagicDamage} damage + ${powerMagicBonus} ${magicPower.power} power bonus! (-10 MP)`;
+      } else {
+        message = `You cast magic for ${totalMagicDamage} damage! (-10 MP)`;
+      }
       break;
 
     case 'heal':
@@ -37,11 +99,28 @@ export const performPlayerAction = (
         logType = 'system';
         return { character: newCharacter, enemy: newEnemy, logEntry: { message, type: logType, timestamp: Date.now() } };
       }
-      const healAmount = calculateHeal(character.ma, 15);
-      const actualHeal = Math.min(healAmount, character.maxHp - character.hp);
+      
+      // Get player's highest power for healing enhancement
+      const healPower = getHighestPower(character.powers);
+      
+      let baseHealAmount = calculateHeal(character.ma, 15);
+      let powerHealBonus = 0;
+      
+      // Apply power bonus to healing if player has wood or water powers
+      if (healPower.power && (healPower.power === 'wood' || healPower.power === 'water')) {
+        powerHealBonus = Math.floor(healPower.value * 0.7); // 70% of power value as healing bonus
+      }
+      
+      const totalHealAmount = baseHealAmount + powerHealBonus;
+      const actualHeal = Math.min(totalHealAmount, character.maxHp - character.hp);
       newCharacter = restoreHp(newCharacter, actualHeal);
       newCharacter = useMp(newCharacter, 15);
-      message = `You heal for ${actualHeal} HP! (-15 MP)`;
+      
+      if (powerHealBonus > 0) {
+        message = `You heal for ${actualHeal} HP (+${powerHealBonus} ${healPower.power} power bonus)! (-15 MP)`;
+      } else {
+        message = `You heal for ${actualHeal} HP! (-15 MP)`;
+      }
       break;
   }
 
@@ -69,16 +148,74 @@ export const performEnemyAction = (
 
   switch (action) {
     case 'attack':
-      const damage = calculateDamage(enemy.pa, character.pd, 4);
-      newCharacter.hp = Math.max(0, newCharacter.hp - damage);
-      message = `${enemy.name} attacks for ${damage} damage!`;
+      // Get enemy's highest power
+      const enemyPower = getHighestPower(enemy.powers);
+      const playerPower = getHighestPower(character.powers);
+      
+      let baseDamage = calculateDamage(enemy.pa, character.pd, 4);
+      let powerDamage = 0;
+      
+      // Apply power damage if enemy has powers
+      if (enemyPower.power && enemyPower.value > 0) {
+        powerDamage = enemyPower.value;
+        
+        // Calculate power multiplier based on element interaction
+        let powerMultiplier = 1.0;
+        if (playerPower.power) {
+          powerMultiplier = getPowerMultiplier(enemyPower.power, playerPower.power);
+        }
+        
+        // Apply player resistance to the power type
+        const resistance = character.powerResistance[enemyPower.power] || 0;
+        const resistanceReduction = Math.min(0.5, resistance * 0.05); // Max 50% reduction
+        
+        powerDamage = Math.floor(powerDamage * powerMultiplier * (1 - resistanceReduction));
+      }
+      
+      const totalDamage = baseDamage + powerDamage;
+      newCharacter.hp = Math.max(0, newCharacter.hp - totalDamage);
+      
+      if (powerDamage > 0) {
+        message = `${enemy.name} attacks for ${baseDamage} damage + ${powerDamage} ${enemyPower.power} power damage!`;
+      } else {
+        message = `${enemy.name} attacks for ${totalDamage} damage!`;
+      }
       break;
 
     case 'magic':
       if (enemy.hasMagic) {
-        const magicDamage = calculateDamage(enemy.ma, character.md, 6);
-        newCharacter.hp = Math.max(0, newCharacter.hp - magicDamage);
-        message = `${enemy.name} casts magic for ${magicDamage} damage!`;
+        // Get enemy's highest power for magic enhancement
+        const magicPower = getHighestPower(enemy.powers);
+        const playerMagicPower = getHighestPower(character.powers);
+        
+        let baseMagicDamage = calculateDamage(enemy.ma, character.md, 6);
+        let powerMagicBonus = 0;
+        
+        // Apply power bonus to magic if enemy has wood or water powers
+        if (magicPower.power && (magicPower.power === 'wood' || magicPower.power === 'water')) {
+          powerMagicBonus = Math.floor(magicPower.value * 0.5); // 50% of power value as bonus
+          
+          // Calculate power multiplier based on element interaction
+          let powerMultiplier = 1.0;
+          if (playerMagicPower.power) {
+            powerMultiplier = getPowerMultiplier(magicPower.power, playerMagicPower.power);
+          }
+          
+          // Apply player resistance to the power type
+          const resistance = character.powerResistance[magicPower.power] || 0;
+          const resistanceReduction = Math.min(0.5, resistance * 0.05); // Max 50% reduction
+          
+          powerMagicBonus = Math.floor(powerMagicBonus * powerMultiplier * (1 - resistanceReduction));
+        }
+        
+        const totalMagicDamage = baseMagicDamage + powerMagicBonus;
+        newCharacter.hp = Math.max(0, newCharacter.hp - totalMagicDamage);
+        
+        if (powerMagicBonus > 0) {
+          message = `${enemy.name} casts magic for ${baseMagicDamage} damage + ${powerMagicBonus} ${magicPower.power} power bonus!`;
+        } else {
+          message = `${enemy.name} casts magic for ${totalMagicDamage} damage!`;
+        }
       } else {
         // Fall back to attack
         const fallbackDamage = calculateDamage(enemy.pa, character.pd, 4);

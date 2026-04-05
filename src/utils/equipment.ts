@@ -1,4 +1,4 @@
-import { Character, Equipment } from '../types/game';
+import { Character, Equipment, PowerType, Powers, PowerResistance } from '../types/game';
 
 export interface ItemStats {
   pa?: number;
@@ -9,15 +9,45 @@ export interface ItemStats {
   maxMp?: number;
 }
 
+const generateRandomPower = (): PowerType | null => {
+  const powers: PowerType[] = ['metal', 'wood', 'water', 'fire', 'earth', 'yin', 'yang'];
+  return Math.random() < 0.6 ? powers[Math.floor(Math.random() * powers.length)] : null; // 60% chance to have a power
+};
+
+const generatePowerValue = (level: number): number => {
+  return Math.floor(level * 2 + Math.random() * 3); // 2-5 power per equipment level
+};
+
+const generatePowerResistanceValue = (level: number): number => {
+  return Math.floor(level * 1.5 + Math.random() * 2); // 1.5-3.5 resistance per equipment level
+};
+
 export const generateEquipment = (id: string, type: 'weapon' | 'armor' | 'accessory', level: number): Equipment => {
   const baseStats = getBaseStats(type);
   const levelMultiplier = 1 + (level - 1) * 0.5; // 50% increase per level
   const basePrice = getBasePrice(type);
   const price = Math.floor(basePrice * levelMultiplier);
   
+  // Generate powers and resistance
+  const primaryPower = generateRandomPower();
+  const secondaryPower = type === 'accessory' && Math.random() < 0.3 ? generateRandomPower() : null; // Accessories can have 2 powers
+  
+  const powers: Partial<Powers> = {};
+  const powerResistance: Partial<PowerResistance> = {};
+  
+  if (primaryPower) {
+    powers[primaryPower] = generatePowerValue(level);
+    powerResistance[primaryPower] = generatePowerResistanceValue(level);
+  }
+  
+  if (secondaryPower && secondaryPower !== primaryPower) {
+    powers[secondaryPower] = generatePowerValue(level);
+    powerResistance[secondaryPower] = generatePowerResistanceValue(level);
+  }
+  
   return {
     id,
-    name: getEquipmentName(type, level),
+    name: getEquipmentName(type, level, primaryPower),
     type,
     level,
     bonus: {
@@ -28,6 +58,8 @@ export const generateEquipment = (id: string, type: 'weapon' | 'armor' | 'access
       maxHp: baseStats.maxHp ? Math.floor(baseStats.maxHp * levelMultiplier) : undefined,
       maxMp: baseStats.maxMp ? Math.floor(baseStats.maxMp * levelMultiplier) : undefined
     },
+    powers,
+    powerResistance,
     price,
     sellPrice: Math.floor(price * 0.5)
   };
@@ -55,15 +87,25 @@ const getBasePrice = (type: 'weapon' | 'armor' | 'accessory'): number => {
   }
 };
 
-const getEquipmentName = (type: 'weapon' | 'armor' | 'accessory', level: number): string => {
+const getEquipmentName = (type: 'weapon' | 'armor' | 'accessory', level: number, power?: PowerType | null): string => {
   const levelPrefix = ['', '精良', '稀有', '史诗', '传说', '神话'][level - 1] || '';
+  const powerPrefix = power ? {
+    metal: '金',
+    wood: '木',
+    water: '水',
+    fire: '火',
+    earth: '土',
+    yin: '阴',
+    yang: '阳'
+  }[power] : '';
+  
   const typeName = {
     weapon: ['铁剑', '钢剑', '灵剑', '仙剑', '神剑'],
     armor: ['布甲', '皮甲', '铁甲', '仙袍', '神袍'],
     accessory: ['木符', '玉符', '灵符', '仙符', '神符']
   };
   
-  return levelPrefix + typeName[type][level - 1];
+  return levelPrefix + powerPrefix + typeName[type][level - 1];
 };
 
 export const generateRandomEquipment = (playerLevel: number): Equipment => {
@@ -93,21 +135,39 @@ export const calculateCharacterStats = (character: Character, allEquipment: Equi
     pd: 5 + Math.floor((character.level - 1) * 0.8),
     md: 5 + Math.floor((character.level - 1) * 0.8),
     maxHp: 100 + Math.floor((character.level - 1) * 10),
-    maxMp: 50 + Math.floor((character.level - 1) * 5)
+    maxMp: 50 + Math.floor((character.level - 1) * 5),
+    powers: { metal: 0, wood: 0, water: 0, fire: 0, earth: 0, yin: 0, yang: 0 },
+    powerResistance: { metal: 0, wood: 0, water: 0, fire: 0, earth: 0, yin: 0, yang: 0 }
   };
   
   // Apply equipment bonuses
   let totalBonus: ItemStats = {};
+  let totalPowers: Partial<Powers> = {};
+  let totalResistance: Partial<PowerResistance> = {};
+  
   allEquipment.forEach(equipment => {
+    // Apply stat bonuses
     if (equipment.bonus.pa) totalBonus.pa = (totalBonus.pa || 0) + equipment.bonus.pa;
     if (equipment.bonus.ma) totalBonus.ma = (totalBonus.ma || 0) + equipment.bonus.ma;
     if (equipment.bonus.pd) totalBonus.pd = (totalBonus.pd || 0) + equipment.bonus.pd;
     if (equipment.bonus.md) totalBonus.md = (totalBonus.md || 0) + equipment.bonus.md;
     if (equipment.bonus.maxHp) totalBonus.maxHp = (totalBonus.maxHp || 0) + equipment.bonus.maxHp;
     if (equipment.bonus.maxMp) totalBonus.maxMp = (totalBonus.maxMp || 0) + equipment.bonus.maxMp;
+    
+    // Apply power bonuses
+    Object.keys(equipment.powers).forEach(power => {
+      const powerKey = power as keyof Powers;
+      totalPowers[powerKey] = (totalPowers[powerKey] || 0) + equipment.powers[powerKey]!;
+    });
+    
+    // Apply resistance bonuses
+    Object.keys(equipment.powerResistance).forEach(resistance => {
+      const resistanceKey = resistance as keyof PowerResistance;
+      totalResistance[resistanceKey] = (totalResistance[resistanceKey] || 0) + equipment.powerResistance[resistanceKey]!;
+    });
   });
   
-  // Apply bonuses
+  // Apply bonuses to base stats
   stats.pa = (baseCharacter.pa || 0) + (totalBonus.pa || 0);
   stats.ma = (baseCharacter.ma || 0) + (totalBonus.ma || 0);
   stats.pd = (baseCharacter.pd || 0) + (totalBonus.pd || 0);
@@ -115,11 +175,39 @@ export const calculateCharacterStats = (character: Character, allEquipment: Equi
   stats.maxHp = (baseCharacter.maxHp || 0) + (totalBonus.maxHp || 0);
   stats.maxMp = (baseCharacter.maxMp || 0) + (totalBonus.maxMp || 0);
   
+  // Apply power bonuses to base powers
+  stats.powers = { ...baseCharacter.powers };
+  Object.keys(totalPowers).forEach(power => {
+    const powerKey = power as keyof Powers;
+    stats.powers[powerKey] = (stats.powers[powerKey] || 0) + totalPowers[powerKey]!;
+  });
+  
+  // Apply resistance bonuses to base resistance
+  stats.powerResistance = { ...baseCharacter.powerResistance };
+  Object.keys(totalResistance).forEach(resistance => {
+    const resistanceKey = resistance as keyof PowerResistance;
+    stats.powerResistance[resistanceKey] = (stats.powerResistance[resistanceKey] || 0) + totalResistance[resistanceKey]!;
+  });
+  
   // Ensure HP and MP don't exceed new max values
   stats.hp = Math.min(stats.hp, stats.maxHp);
   stats.mp = Math.min(stats.mp, stats.maxMp);
   
   return stats;
+};
+
+export const getHighestPower = (powers: Partial<Powers>): { power: PowerType | null, value: number } => {
+  let highestPower: PowerType | null = null;
+  let highestValue = 0;
+  
+  Object.entries(powers).forEach(([power, value]) => {
+    if (value && value > highestValue) {
+      highestPower = power as PowerType;
+      highestValue = value;
+    }
+  });
+  
+  return { power: highestPower, value: highestValue };
 };
 
 export const equipItem = (character: Character, itemId: string): Character => {

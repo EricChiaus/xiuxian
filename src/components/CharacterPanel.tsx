@@ -1,5 +1,6 @@
 import React from 'react';
 import { Character } from '../types/game';
+import PowerDisplay from './PowerDisplay';
 
 interface CharacterPanelProps {
   player: Character;
@@ -143,6 +144,14 @@ const CharacterPanel: React.FC<CharacterPanelProps> = ({ player, onLevelUp, canL
           <div className="text-xs text-amber-800">🧘 抗法</div>
         </div>
       </div>
+
+      {/* Powers Display */}
+      <PowerDisplay
+        powers={player.powers}
+        powerResistance={player.powerResistance}
+        title="修仙者之力"
+        showResistance={true}
+      />
 
       {/* Level Up Button */}
       <button
