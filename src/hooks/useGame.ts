@@ -14,8 +14,13 @@ export const useGame = () => {
       const offlineExp = calculateOfflineExp(savedData.lastSaveTime);
       const characterWithExp = gainExp(character, offlineExp);
       
+      // Cap EXP at max level to prevent overflow on refresh
+      const cappedCharacter = characterWithExp.level >= 99 ? 
+        { ...characterWithExp, exp: characterWithExp.expToNext - 1 } : 
+        characterWithExp;
+      
       return {
-        player: characterWithExp,
+        player: cappedCharacter,
         currentEnemy: null,
         inBattle: false,
         lastSaveTime: Date.now(),
