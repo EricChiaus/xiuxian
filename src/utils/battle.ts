@@ -37,7 +37,7 @@ export const performPlayerAction = (
         logType = 'system';
         return { character: newCharacter, enemy: newEnemy, logEntry: { message, type: logType, timestamp: Date.now() } };
       }
-      const healAmount = calculateHeal(character.ma, 10);
+      const healAmount = calculateHeal(character.ma, 15);
       const actualHeal = Math.min(healAmount, character.maxHp - character.hp);
       newCharacter = restoreHp(newCharacter, actualHeal);
       newCharacter = useMp(newCharacter, 15);

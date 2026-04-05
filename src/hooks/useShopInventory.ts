@@ -1,18 +1,34 @@
 import { useCallback } from 'react';
 import { BattleLogEntry, GameState } from '../types/game';
 import { equipItem } from '../utils/equipment';
+import { generateShopItems } from '../utils/shop';
 
 export const useShopInventory = (
   gameState: GameState,
   setGameState: React.Dispatch<React.SetStateAction<GameState>>,
   addBattleLogEntry: (entry: BattleLogEntry) => void
 ) => {
+  const refreshShop = useCallback(() => {
+    const newShopItems = generateShopItems(gameState.player.level);
+    
+    setGameState(prev => ({
+      ...prev,
+      shopItems: newShopItems
+    }));
+    
+    addBattleLogEntry({
+      message: 'Shop inventory refreshed!',
+      type: 'system',
+      timestamp: Date.now()
+    });
+  }, [gameState.player.level, setGameState, addBattleLogEntry]);
+
   const buyItem = useCallback((itemId: string) => {
-    const item = gameState.shopItems.find((shopItem: any) => shopItem.id === itemId);
-    if (!item || gameState.player.coin < item.price) return;
+    const shopItem = gameState.shopItems.find(item => item.id === itemId);
+    if (!shopItem || gameState.player.coin < shopItem.price) return;
 
     setGameState((prev: GameState) => {
-      const newPlayer = { ...prev.player, coin: prev.player.coin - item.price };
+      const newPlayer = { ...prev.player, coin: prev.player.coin - shopItem.price };
       
       // Add equipment to inventory
       newPlayer.inventory = [...newPlayer.inventory, itemId];
@@ -24,7 +40,7 @@ export const useShopInventory = (
     });
 
     addBattleLogEntry({
-      message: `Purchased ${item.name} for ${item.price} 🪙!`,
+      message: `Purchased ${shopItem.name} for ${shopItem.price} 🪙!`,
       type: 'system',
       timestamp: Date.now()
     });
@@ -33,7 +49,7 @@ export const useShopInventory = (
   const sellItem = useCallback((itemId: string) => {
     if (!gameState.player.inventory.includes(itemId)) return;
 
-    const item = gameState.shopItems.find((shopItem: any) => shopItem.id === itemId);
+    const item = gameState.shopItems.find(item => item.id === itemId);
     if (!item) return;
 
     const sellPrice = Math.floor(item.price / 2);
@@ -57,7 +73,7 @@ export const useShopInventory = (
     });
 
     addBattleLogEntry({
-      message: `Sold item for ${sellPrice} 🪙!`,
+      message: `Sold ${item.name} for ${sellPrice} 🪙!`,
       type: 'system',
       timestamp: Date.now()
     });
@@ -66,20 +82,14 @@ export const useShopInventory = (
   const useItem = useCallback((itemId: string) => {
     if (!gameState.player.inventory.includes(itemId)) return;
 
-    // Try to equip the item
+    // Try to equip item
     const newPlayer = equipItem(gameState.player, itemId);
     
-    // Check if the item was actually equipped
+    // Check if item was actually equipped
     if (newPlayer !== gameState.player) {
       // Item was equipped successfully
-      const itemName = itemId === 'sword1' ? '铁剑' :
-                      itemId === 'sword2' ? '钢剑' :
-                      itemId === 'staff1' ? '木杖' :
-                      itemId === 'staff2' ? '水晶杖' :
-                      itemId === 'armor1' ? '皮甲' :
-                      itemId === 'armor2' ? '铁甲' :
-                      itemId === 'armor3' ? '道袍' :
-                      itemId === 'armor4' ? '法袍' : itemId;
+      const item = gameState.shopItems.find(shopItem => shopItem.id === itemId);
+      const itemName = item?.name || itemId;
       
       addBattleLogEntry({
         message: `装备了 ${itemName}！`,
@@ -97,6 +107,7 @@ export const useShopInventory = (
   return {
     buyItem,
     sellItem,
-    useItem
+    useItem,
+    refreshShop
   };
 };

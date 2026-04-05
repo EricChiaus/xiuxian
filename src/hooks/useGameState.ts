@@ -77,7 +77,7 @@ export const useGameState = () => {
         }] : [],
         offlineExp,
         lastRegenerationTime: Date.now(),
-        shopItems: generateShopItems(),
+        shopItems: generateShopItems(cappedCharacter.level),
         playerEquipment: []
       };
     }
@@ -93,7 +93,7 @@ export const useGameState = () => {
       battleLog: [],
       offlineExp: 0,
       lastRegenerationTime: Date.now(),
-      shopItems: generateShopItems(),
+      shopItems: generateShopItems(createInitialCharacter().level),
       playerEquipment: []
     };
   });
@@ -115,7 +115,7 @@ export const useGameState = () => {
       }],
       offlineExp: 0,
       lastRegenerationTime: Date.now(),
-      shopItems: generateShopItems(),
+      shopItems: generateShopItems(createInitialCharacter().level),
       playerEquipment: []
     });
   }, []);

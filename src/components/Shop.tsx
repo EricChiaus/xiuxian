@@ -4,15 +4,46 @@ import { ShopItem } from '../types/game';
 interface ShopProps {
   shopItems: ShopItem[];
   playerCoins: number;
+  playerLevel: number;
   onBuyItem: (itemId: string) => void;
+  onRefreshShop: () => void;
 }
 
-const Shop: React.FC<ShopProps> = ({ shopItems, playerCoins, onBuyItem }) => {
+const Shop: React.FC<ShopProps> = ({ shopItems, playerCoins, playerLevel, onBuyItem, onRefreshShop }) => {
   return (
     <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 shadow-lg border-2 border-amber-700">
-      <h3 className="text-xl font-bold text-center mb-4 text-red-900" style={{ fontFamily: 'serif' }}>🏪 法宝阁</h3>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-xl font-bold text-red-900" style={{ fontFamily: 'serif' }}>🏪 法宝阁</h3>
+        <button
+          onClick={onRefreshShop}
+          className="px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white text-sm font-bold rounded-lg hover:from-purple-700 hover:to-purple-800 transition-colors border-2 border-purple-800"
+        >
+          🔄 刷新商品
+        </button>
+      </div>
       
       <div className="bg-gradient-to-br from-amber-100 to-orange-100 rounded-lg p-4 mb-4 border border-amber-600">
+        <div className="text-center mb-3">
+          <span className="text-sm text-amber-700">
+            修仙者等级: {playerLevel} | 
+            <span className="font-bold text-red-900">
+              {(() => {
+                if (playerLevel >= 1 && playerLevel <= 9) return '炼气期';
+                if (playerLevel >= 10 && playerLevel <= 19) return '筑基期';
+                if (playerLevel >= 20 && playerLevel <= 29) return '金丹期';
+                if (playerLevel >= 30 && playerLevel <= 39) return '元婴期';
+                if (playerLevel >= 40 && playerLevel <= 49) return '化神期';
+                if (playerLevel >= 50 && playerLevel <= 59) return '炼虚期';
+                if (playerLevel >= 60 && playerLevel <= 69) return '合体期';
+                if (playerLevel >= 70 && playerLevel <= 79) return '大乘期';
+                if (playerLevel >= 80 && playerLevel <= 89) return '渡劫期';
+                if (playerLevel >= 90) return '大罗金仙';
+                return '凡人';
+              })()}
+            </span>
+          </span>
+        </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {shopItems.map((item) => (
             <div key={item.id} className="border-2 border-amber-600 rounded-lg p-3 hover:shadow-md transition-shadow bg-gradient-to-br from-amber-50 to-orange-50">

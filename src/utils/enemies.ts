@@ -41,8 +41,19 @@ export const generateEnemy = (playerLevel: number, id?: string, isElite: boolean
   };
 };
 
-export const generateMultipleEnemies = (playerLevel: number, count: number = 2): Enemy[] => {
+export const generateMultipleEnemies = (playerLevel: number): Enemy[] => {
   const enemies: Enemy[] = [];
+  const enemyCount = Math.random(); // 0-1 random
+  
+  let count: number;
+  if (enemyCount < 0.5) {
+    count = 1; // 50% chance for 1 enemy
+  } else if (enemyCount < 0.75) {
+    count = 2; // 25% chance for 2 enemies
+  } else {
+    count = 3; // 25% chance for 3 enemies
+  }
+  
   const eliteChance = 0.2; // 20% chance for elite enemies
   
   for (let i = 0; i < count; i++) {
@@ -69,6 +80,6 @@ export const calculateDamage = (
   return Math.max(1, attackerAttack - defenderDefense + Math.floor(Math.random() * variance));
 };
 
-export const calculateHeal = (magicAttack: number, variance: number = 10): number => {
-  return Math.floor(magicAttack * 1.5 + Math.floor(Math.random() * variance));
+export const calculateHeal = (magicAttack: number, variance: number = 15): number => {
+  return Math.floor(magicAttack * 2.0 + Math.floor(Math.random() * variance));
 };

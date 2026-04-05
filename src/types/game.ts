@@ -23,6 +23,7 @@ export interface Equipment {
   id: string;
   name: string;
   type: 'weapon' | 'armor' | 'accessory';
+  level: number; // Equipment level 1-5
   bonus: {
     pa?: number;
     ma?: number;
@@ -97,3 +98,18 @@ export interface GameSaveData {
   player: Character;
   lastSaveTime: number;
 }
+
+// Cultivator level names
+export const getCultivatorLevelName = (level: number): string => {
+  if (level >= 1 && level <= 9) return '炼气期';
+  if (level >= 10 && level <= 19) return '筑基期';
+  if (level >= 20 && level <= 29) return '金丹期';
+  if (level >= 30 && level <= 39) return '元婴期';
+  if (level >= 40 && level <= 49) return '化神期';
+  if (level >= 50 && level <= 59) return '炼虚期';
+  if (level >= 60 && level <= 69) return '合体期';
+  if (level >= 70 && level <= 79) return '大乘期';
+  if (level >= 80 && level <= 89) return '渡劫期';
+  if (level >= 90) return '大罗金仙';
+  return '凡人';
+};

@@ -19,7 +19,7 @@ export const useBattle = (
   const startBattle = useCallback(() => {
     if (gameState.inBattle) return;
 
-    const enemies = generateMultipleEnemies(gameState.player.level, 2 + Math.floor(gameState.player.level / 10)); // 2-3 enemies based on level
+    const enemies = generateMultipleEnemies(gameState.player.level);
     const firstEnemy = enemies[0];
     
     setGameState(prev => ({

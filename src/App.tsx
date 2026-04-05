@@ -7,7 +7,7 @@ import Inventory from './components/Inventory';
 import Profile from './components/Profile';
 
 function App() {
-  const { gameState, setGameState, startBattle, performAction, manualLevelUp, resetGame, buyItem, sellItem, useItem, selectEnemy } = useGame();
+  const { gameState, setGameState, startBattle, performAction, manualLevelUp, resetGame, buyItem, sellItem, useItem, refreshShop, selectEnemy } = useGame();
   const [showShop, setShowShop] = useState(false);
   const [showInventory, setShowInventory] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
@@ -105,7 +105,9 @@ function App() {
               <Shop
                 shopItems={gameState.shopItems}
                 playerCoins={gameState.player.coin}
+                playerLevel={gameState.player.level}
                 onBuyItem={buyItem}
+                onRefreshShop={refreshShop}
               />
             </div>
           </div>
