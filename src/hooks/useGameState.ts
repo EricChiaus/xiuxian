@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { GameState } from '../types/game';
+import { GameState, Equipment } from '../types/game';
 import { createInitialCharacter } from '../utils/character';
 import { generateShopItems } from '../utils/shop';
 
@@ -10,6 +10,29 @@ const loadGame = () => {
     
     if (saved) {
       const parsed = JSON.parse(saved);
+      
+      // Migrate old save data with playerEquipment to new format
+      if (parsed.player && parsed.player.playerEquipment) {
+        const oldPlayerEquipment = parsed.player.playerEquipment;
+        
+        // Convert playerEquipment objects to inventory Equipment objects
+        const inventoryEquipment: Equipment[] = [];
+        
+        Object.entries(oldPlayerEquipment).forEach(([itemId, equipmentData]) => {
+          const equipment = equipmentData as Equipment;
+          inventoryEquipment.push({
+            ...equipment,
+            equipped: Object.values(parsed.player.equippedItems || {}).includes(itemId)
+          });
+        });
+        
+        // Update player data to new format
+        parsed.player.inventory = inventoryEquipment;
+        
+        // Remove old playerEquipment field
+        delete parsed.player.playerEquipment;
+      }
+      
       return parsed;
     }
     return null;
