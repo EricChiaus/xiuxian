@@ -29,8 +29,7 @@ const saveGame = (state: GameState) => {
     // Create a clean save state without battle-related data
     const saveState = {
       player: state.player,
-      lastSaveTime: Date.now(),
-      shopItems: [] // Don't save shop items - they should be randomly generated
+      lastSaveTime: Date.now()
     };
     localStorage.setItem('xiuxian-save', JSON.stringify(saveState));
   } catch {
