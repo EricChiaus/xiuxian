@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { GameState, Equipment, ShopItem, Elements, ElementResistance } from '../types/game';
 import { generateShopItems } from '../utils/shop';
-import { generateEquipment, generateRandomEquipment } from '../utils/equipment';
+import { generateEquipment } from '../utils/equipment';
 import { calculateStats } from '../utils/character';
 
 export const useShopInventory = (
@@ -77,12 +77,9 @@ export const useShopInventory = (
       const newPlayer = { ...prev.player, coin: prev.player.coin - shopItem.price };
       
       // Generate equipment and add to inventory
-      // We need to regenerate the equipment since shop only stores ShopItem display data
-      const purchasedEquipment = generateRandomEquipment(newPlayer.level);
-      // But use the shop item's ID, name, and price to maintain consistency
-      purchasedEquipment.id = shopItem.id;
-      purchasedEquipment.name = shopItem.name;
-      purchasedEquipment.price = shopItem.price;
+      // Use the exact equipment data from the shop item
+      const purchasedEquipment = { ...shopItem.equipmentData };
+      // Set the sell price based on the shop price
       purchasedEquipment.sellPrice = Math.floor(shopItem.price / 2);
       
       newPlayer.inventory = [...newPlayer.inventory, purchasedEquipment];

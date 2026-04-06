@@ -44,6 +44,7 @@ export const generateShopItems = (playerLevel: number): ShopItem[] => {
       description: descriptionParts.filter(part => part && part !== '无元素' && part !== '无属性加成').join(' | '),
       price: item.price,
       type: 'equipment',
+      equipmentData: { ...item }, // Store the complete equipment data
       effect: '' // ShopItem interface requires this but we don't use it
     };
   });

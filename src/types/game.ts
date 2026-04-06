@@ -43,6 +43,7 @@ export interface ShopItem {
   description: string;
   price: number;
   type: 'equipment';
+  equipmentData: Equipment; // Store the complete equipment data
   effect?: string;
 }
 
