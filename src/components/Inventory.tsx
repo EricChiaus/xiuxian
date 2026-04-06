@@ -260,16 +260,6 @@ const Inventory: React.FC<InventoryProps> = ({
                           🔓 卸下
                         </button>
                       </div>
-                      
-                      {/* Tooltip for equipped item details */}
-                      {hoveredItem === equippedItem.id && (
-                        <div 
-                          className="absolute z-50 w-80 p-4 bg-gray-900 text-white text-xs rounded-lg shadow-xl bottom-full left-1/2 transform -translate-x-1/2 mb-2"
-                          dangerouslySetInnerHTML={{ 
-                            __html: formatItemDetails(equippedItem)
-                          }}
-                        />
-                      )}
                     </div>
                   ) : (
                     <div className="text-gray-500 text-sm">
@@ -301,8 +291,6 @@ const Inventory: React.FC<InventoryProps> = ({
                     backgroundColor: equipped ? getRarityColor(equipment.rarity) + '20' : '#ffffff',
                     borderColor: getRarityColor(equipment.rarity)
                   }}
-                  onMouseEnter={() => setHoveredItem(equipment.id)}
-                  onMouseLeave={() => setHoveredItem(null)}
                 >
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-2 mb-2">
@@ -332,7 +320,7 @@ const Inventory: React.FC<InventoryProps> = ({
                   {/* Tooltip for item details */}
                   {hoveredItem === equipment.id && (
                     <div 
-                      className="absolute z-10 w-80 p-4 bg-gray-900 text-white text-xs rounded-lg shadow-xl bottom-full mb-2 left-0"
+                      className="absolute z-10 w-80 p-4 bg-gradient-to-br from-amber-900 to-orange-800 text-white text-xs rounded-lg shadow-xl bottom-full mb-2 left-0 border border-amber-600"
                       dangerouslySetInnerHTML={{ 
                         __html: formatItemDetails(equipment)
                       }}
@@ -342,12 +330,34 @@ const Inventory: React.FC<InventoryProps> = ({
                   {/* Action Buttons */}
                   <div className="flex gap-2 mt-3">
                     {!equipped && (
-                      <button
-                        onClick={() => onEquipItem(equipment.id)}
-                        className="flex-1 px-3 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-bold rounded hover:from-blue-700 hover:to-purple-700 transition-colors"
-                      >
-                        🎯 装备
-                      </button>
+                      <div className="relative">
+                        <button
+                          onClick={() => onEquipItem(equipment.id)}
+                          onMouseEnter={(e) => {
+                            e.stopPropagation();
+                            setHoveredItem(equipment.id);
+                          }}
+                          onMouseLeave={(e) => {
+                            e.stopPropagation();
+                            setHoveredItem(null);
+                          }}
+                          className="flex-1 px-3 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-bold rounded hover:from-blue-700 hover:to-purple-700 transition-colors"
+                        >
+                          🎯 装备
+                        </button>
+                        
+                        {/* Comparison Tooltip */}
+                        {hoveredItem === equipment.id && (
+                          <div 
+                            className="absolute z-50 w-80 p-4 bg-gray-900 text-white text-xs rounded-lg shadow-xl bottom-full left-1/2 transform -translate-x-1/2 mb-2"
+                            dangerouslySetInnerHTML={{ 
+                              __html: formatStatComparison(
+                                getStatComparison(equipment, getEquippedEquipmentByType(equipment.type))
+                              )
+                            }}
+                          />
+                        )}
+                      </div>
                     )}
                     {equipped && (
                       <button
