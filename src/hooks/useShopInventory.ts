@@ -274,10 +274,11 @@ export const useShopInventory = (
           }
         });
         
-        // Add elemental resistance
-        Object.entries(eq.elementResistance).forEach(([element, value]) => {
+        // Add elemental resistance (half of element values)
+        Object.entries(eq.elements).forEach(([element, value]) => {
           if (value && element in newPlayer.elementResistance) {
-            (newPlayer.elementResistance as any)[element] += value;
+            const resistanceValue = Math.floor(value / 2);
+            newPlayer.elementResistance[element as keyof ElementResistance] += resistanceValue;
           }
         });
       });

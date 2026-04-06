@@ -18,10 +18,6 @@ const generateElementValue = (level: number): number => {
   return Math.floor(level * 2 + Math.random() * 3); // 2-5 element per equipment level
 };
 
-const generateElementResistanceValue = (level: number): number => {
-  return Math.floor(level * 1.5 + Math.random() * 2); // 1.5-3.5 resistance per equipment level
-};
-
 export const generateEquipment = (id: string, type: Equipment['type'], level: number, rarity?: Equipment['rarity']): Equipment => {
   // Generate rarity if not provided
   const rarityRoll = Math.random();
@@ -50,21 +46,13 @@ export const generateEquipment = (id: string, type: Equipment['type'], level: nu
   const secondaryElement = (type === 'accessory' || finalRarity === 'legendary' || finalRarity === 'epic') && Math.random() < 0.4 ? generateRandomElement() : null;
 
   const elements: Partial<Elements> = {};
-  const elementResistance: Partial<ElementResistance> = {};
 
   if (primaryElement) {
     elements[primaryElement] = generateElementValue(level) * rarityMultiplier;
-    elementResistance[primaryElement] = generateElementResistanceValue(level) * rarityMultiplier;
   }
 
   if (secondaryElement && secondaryElement !== primaryElement) {
     elements[secondaryElement] = generateElementValue(level) * rarityMultiplier;
-    elementResistance[secondaryElement] = generateElementResistanceValue(level) * rarityMultiplier;
-  }
-
-  // All equipment types get some resistance to their primary element
-  if (primaryElement) {
-    elementResistance[primaryElement] = (elementResistance[primaryElement] || 0) + generateElementResistanceValue(level) * rarityMultiplier;
   }
 
   const price = Math.floor(basePrice * levelMultiplier * rarityMultiplier);
@@ -84,7 +72,6 @@ export const generateEquipment = (id: string, type: Equipment['type'], level: nu
       maxMp: baseStats.maxMp ? Math.floor(baseStats.maxMp * totalMultiplier) : undefined
     },
     elements,
-    elementResistance,
     price,
     sellPrice: Math.floor(price * 0.5)
   };
@@ -157,9 +144,7 @@ export const getItemStats = (equipment: Equipment): ItemStats => {
   return equipment.bonus;
 };
 
-export const calculateCharacterStats = (character: Character, allEquipment: Equipment[] = []): Character => {
-  let stats = { ...character };
-  
+export const calculateAllEquipment = (character: Character): Character => {
   // Reset to base stats (without equipment)
   const baseCharacter = {
     ...character,
@@ -172,13 +157,13 @@ export const calculateCharacterStats = (character: Character, allEquipment: Equi
     elements: { metal: 0, wood: 0, water: 0, fire: 0, earth: 0, yin: 0, yang: 0 },
     elementResistance: { metal: 0, wood: 0, water: 0, fire: 0, earth: 0, yin: 0, yang: 0 }
   };
-  
+
   // Apply equipment bonuses
   let totalBonus: ItemStats = {};
   let totalElements: Partial<Elements> = {};
   let totalResistance: Partial<ElementResistance> = {};
-  
-  allEquipment.forEach(equipment => {
+
+  character.inventory.forEach(equipment => {
     // Apply stat bonuses
     if (equipment.bonus.pa) totalBonus.pa = (totalBonus.pa || 0) + equipment.bonus.pa;
     if (equipment.bonus.ma) totalBonus.ma = (totalBonus.ma || 0) + equipment.bonus.ma;
@@ -186,43 +171,55 @@ export const calculateCharacterStats = (character: Character, allEquipment: Equi
     if (equipment.bonus.md) totalBonus.md = (totalBonus.md || 0) + equipment.bonus.md;
     if (equipment.bonus.maxHp) totalBonus.maxHp = (totalBonus.maxHp || 0) + equipment.bonus.maxHp;
     if (equipment.bonus.maxMp) totalBonus.maxMp = (totalBonus.maxMp || 0) + equipment.bonus.maxMp;
-    
+
     // Apply element bonuses
     Object.keys(equipment.elements).forEach(element => {
       const elementKey = element as keyof Elements;
       totalElements[elementKey] = (totalElements[elementKey] || 0) + equipment.elements[elementKey]!;
     });
-    
-    // Apply resistance bonuses
-    Object.keys(equipment.elementResistance).forEach(resistance => {
-      const resistanceKey = resistance as keyof ElementResistance;
-      totalResistance[resistanceKey] = (totalResistance[resistanceKey] || 0) + equipment.elementResistance[resistanceKey]!;
+
+    // Calculate resistance (half of element values)
+    Object.keys(equipment.elements).forEach(element => {
+      const elementKey = element as keyof Elements;
+      const elementValue = equipment.elements[elementKey];
+      if (elementValue) {
+        totalResistance[elementKey] = (totalResistance[elementKey] || 0) + Math.floor(elementValue / 2);
+      }
     });
   });
-  
+
   // Apply bonuses to base stats
-  stats.pa = (baseCharacter.pa || 0) + (totalBonus.pa || 0);
-  stats.ma = (baseCharacter.ma || 0) + (totalBonus.ma || 0);
-  stats.pd = (baseCharacter.pd || 0) + (totalBonus.pd || 0);
-  stats.md = (baseCharacter.md || 0) + (totalBonus.md || 0);
-  stats.maxHp = (baseCharacter.maxHp || 0) + (totalBonus.maxHp || 0);
-  stats.maxMp = (baseCharacter.maxMp || 0) + (totalBonus.maxMp || 0);
-  
+  const stats: Character = {
+    pa: (baseCharacter.pa || 0) + (totalBonus.pa || 0),
+    ma: (baseCharacter.ma || 0) + (totalBonus.ma || 0),
+    pd: (baseCharacter.pd || 0) + (totalBonus.pd || 0),
+    md: (baseCharacter.md || 0) + (totalBonus.md || 0),
+    maxHp: (baseCharacter.maxHp || 0) + (totalBonus.maxHp || 0),
+    maxMp: (baseCharacter.maxMp || 0) + (totalBonus.maxMp || 0),
+    hp: (baseCharacter.hp || 0),
+    mp: (baseCharacter.mp || 0),
+    level: character.level,
+    exp: character.exp,
+    expToNext: character.expToNext,
+    coin: character.coin,
+    inventory: character.inventory,
+    avatar: character.avatar,
+    elements: { ...baseCharacter.elements },
+    elementResistance: { ...baseCharacter.elementResistance }
+  };
+
   // Apply element bonuses to base elements
-  stats.elements = { ...baseCharacter.elements };
   Object.keys(totalElements).forEach(element => {
     const elementKey = element as keyof Elements;
     stats.elements[elementKey] = (stats.elements[elementKey] || 0) + totalElements[elementKey]!;
   });
-  
+
   // Apply resistance bonuses to base resistance
-  stats.elementResistance = { ...baseCharacter.elementResistance };
   Object.keys(totalResistance).forEach(resistance => {
     const resistanceKey = resistance as keyof ElementResistance;
     stats.elementResistance[resistanceKey] = (stats.elementResistance[resistanceKey] || 0) + totalResistance[resistanceKey]!;
   });
-  
-  // Ensure HP and MP don't exceed new max values
+
   stats.hp = Math.min(stats.hp, stats.maxHp);
   stats.mp = Math.min(stats.mp, stats.maxMp);
   

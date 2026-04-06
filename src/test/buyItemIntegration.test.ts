@@ -92,7 +92,6 @@ describe('BuyItem Integration Tests', () => {
           level: 1,
           bonus: { pa: 10 },
           elements: { fire: 5 },
-          elementResistance: {},
           price: shopItem.price,
           sellPrice: Math.floor(shopItem.price / 2)
         }]

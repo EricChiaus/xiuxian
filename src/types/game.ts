@@ -32,7 +32,6 @@ export interface Equipment {
     maxMp?: number;
   };
   elements: Partial<Elements>; // Elemental Elements this equipment provides
-  elementResistance: Partial<ElementResistance>; // Elemental resistance this equipment provides
   price: number;
   sellPrice: number;
   equipped?: boolean; // Whether this item is currently equipped
