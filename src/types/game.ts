@@ -85,6 +85,12 @@ export interface GameState {
   battleLog: BattleLogEntry[];
   lastSaveTime: number;
   shopItems: ShopItem[];
+  battleResult: 'victory' | 'defeat' | null;
+  battleRewards: {
+    expGained: number;
+    coinsGained: number;
+    expLost: number;
+  } | null;
 }
 
 export interface BattleLogEntry {

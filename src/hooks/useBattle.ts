@@ -101,6 +101,12 @@ export const useBattle = (
           selectedEnemyId: null,
           inBattle: false,
           isPlayerTurn: true,
+          battleResult: 'victory' as const,
+          battleRewards: {
+            expGained: totalExp,
+            coinsGained: totalCoins,
+            expLost: 0
+          },
           battleLog: [...prev.battleLog, {
             message: `Victory! You gained ${totalExp} EXP and ${totalCoins} coins! HP/MP fully restored!`,
             type: 'system' as const,
@@ -134,6 +140,12 @@ export const useBattle = (
           selectedEnemyId: null,
           inBattle: false,
           isPlayerTurn: true,
+          battleResult: 'defeat' as const,
+          battleRewards: {
+            expGained: 0,
+            coinsGained: 0,
+            expLost: expLoss
+          },
           battleLog: [...prev.battleLog, {
             message: `Defeat! You lost ${expLoss} EXP! HP/MP fully restored!`,
             type: 'system' as const,
@@ -207,6 +219,12 @@ export const useBattle = (
             selectedEnemyId: null,
             inBattle: false,
             isPlayerTurn: true,
+            battleResult: 'victory' as const,
+            battleRewards: {
+              expGained: totalExp,
+              coinsGained: totalCoins,
+              expLost: 0
+            },
             battleLog: [...prev.battleLog, {
               message: `Victory! You gained ${totalExp} EXP and ${totalCoins} coins! HP/MP fully restored!`,
               type: 'system' as const,
@@ -236,6 +254,12 @@ export const useBattle = (
             selectedEnemyId: null,
             inBattle: false,
             isPlayerTurn: true,
+            battleResult: 'defeat' as const,
+            battleRewards: {
+              expGained: 0,
+              coinsGained: 0,
+              expLost: expLoss
+            },
             battleLog: [...prev.battleLog, {
               message: `Defeat! You lost ${expLoss} EXP! HP/MP fully restored!`,
               type: 'system' as const,

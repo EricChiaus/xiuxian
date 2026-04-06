@@ -61,6 +61,15 @@ export const useGame = () => {
     }));
   }, [gameState.player, addBattleLogEntry, setGameState]);
 
+  // Close battle modal and reset battle result
+  const closeBattleModal = useCallback(() => {
+    setGameState(prev => ({
+      ...prev,
+      battleResult: null,
+      battleRewards: null
+    }));
+  }, [setGameState]);
+
   // Auto EXP growth every 60 seconds (not during battle)
   useEffect(() => {
     if (gameState.inBattle) return;
@@ -106,6 +115,7 @@ export const useGame = () => {
     selectEnemy,
     getAllEquipment,
     getInventoryEquipment,
-    getAvailableShopItems
+    getAvailableShopItems,
+    closeBattleModal
   };
 };

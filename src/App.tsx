@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useGame } from './hooks/useGame';
 import CharacterPanel from './components/CharacterPanel';
-import BattleArea from './components/BattleArea';
+import BattleModal from './components/BattleModal';
 import Shop from './components/Shop';
 import Inventory from './components/Inventory';
 import Profile from './components/Profile';
 import { getCultivatorLevelName } from './types/game';
 
 function App() {
-  const { gameState, setGameState, startBattle, performAction, manualLevelUp, resetGame, buyItem, sellItem, equipItem, unequipItem, refreshShop, selectEnemy, getAvailableShopItems } = useGame();
+  const { gameState, setGameState, startBattle, performAction, manualLevelUp, resetGame, buyItem, sellItem, equipItem, unequipItem, refreshShop, selectEnemy, getAvailableShopItems, closeBattleModal } = useGame();
   const [showShop, setShowShop] = useState(false);
   const [showInventory, setShowInventory] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
@@ -72,23 +72,36 @@ function App() {
               onLevelUp={manualLevelUp}
               canLevelUp={gameState.player.exp >= gameState.player.expToNext}
             />
+            
+            {/* Start Battle Button */}
+            {!gameState.inBattle && (
+              <div className="mt-4">
+                <button
+                  onClick={startBattle}
+                  className="w-full px-6 py-3 bg-gradient-to-r from-red-600 to-orange-600 text-white font-bold rounded-xl hover:from-red-700 hover:to-orange-700 transition-all transform hover:scale-105 border-2 border-red-800"
+                >
+                  ⚔️ 开始战斗
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Battle Area */}
-          <div className="lg:col-span-1">
-            <BattleArea
-              inBattle={gameState.inBattle}
-              currentEnemy={gameState.currentEnemy}
-              enemies={gameState.enemies}
-              selectedEnemyId={gameState.selectedEnemyId}
-              isPlayerTurn={gameState.isPlayerTurn}
-              battleLog={gameState.battleLog}
-              onStartBattle={startBattle}
-              onAction={performAction}
-              onSelectEnemy={selectEnemy}
-            />
           </div>
-        </div>
+
+        {/* Battle Modal */}
+        <BattleModal
+          inBattle={gameState.inBattle}
+          currentEnemy={gameState.currentEnemy}
+          enemies={gameState.enemies}
+          selectedEnemyId={gameState.selectedEnemyId}
+          isPlayerTurn={gameState.isPlayerTurn}
+          battleLog={gameState.battleLog}
+          battleResult={gameState.battleResult}
+          rewards={gameState.battleRewards}
+          onAction={performAction}
+          onSelectEnemy={selectEnemy}
+          onCloseModal={closeBattleModal}
+        />
 
         {/* Shop Modal */}
         {showShop && (

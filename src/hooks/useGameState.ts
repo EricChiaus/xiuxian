@@ -58,7 +58,9 @@ export const useGameState = () => {
         isPlayerTurn: true,
         lastSaveTime: Date.now(),
         battleLog: [], // No more offline EXP with regeneration removed
-        shopItems: generateShopItems(savedData.player.level)
+        shopItems: generateShopItems(savedData.player.level),
+        battleResult: null,
+        battleRewards: null
       };
     }
     
@@ -71,7 +73,9 @@ export const useGameState = () => {
       isPlayerTurn: true,
       lastSaveTime: Date.now(),
       battleLog: [],
-      shopItems: generateShopItems(createInitialCharacter().level)
+      shopItems: generateShopItems(createInitialCharacter().level),
+      battleResult: null,
+      battleRewards: null
     };
   });
 
@@ -90,7 +94,9 @@ export const useGameState = () => {
         type: 'system',
         timestamp: Date.now()
       }],
-      shopItems: generateShopItems(createInitialCharacter().level)
+      shopItems: generateShopItems(createInitialCharacter().level),
+      battleResult: null,
+      battleRewards: null
     });
   }, []);
 
