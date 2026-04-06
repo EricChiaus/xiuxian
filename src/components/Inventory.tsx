@@ -23,7 +23,12 @@ const Inventory: React.FC<InventoryProps> = ({
   };
 
   // Get currently equipped equipment of the same type
-  const getEquippedEquipmentByType = (type: Equipment['type']): Equipment | undefined => {
+  const getEquippedEquipmentByType = (type: Equipment['type'] | 'accessory2'): Equipment | undefined => {
+    if (type === 'accessory2') {
+      // For the second accessory slot, find the second equipped accessory
+      const equippedAccessories = character.inventory.filter(eq => eq.equipped && eq.type === 'accessory');
+      return equippedAccessories[1]; // Return the second accessory
+    }
     return character.inventory.find(eq => eq.equipped && eq.type === type);
   };
 

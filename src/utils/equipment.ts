@@ -48,11 +48,11 @@ export const generateEquipment = (id: string, type: Equipment['type'], level: nu
   const elements: Partial<Elements> = {};
 
   if (primaryElement) {
-    elements[primaryElement] = generateElementValue(level) * rarityMultiplier;
+    elements[primaryElement] = Math.floor(generateElementValue(level) * rarityMultiplier);
   }
 
   if (secondaryElement && secondaryElement !== primaryElement) {
-    elements[secondaryElement] = generateElementValue(level) * rarityMultiplier;
+    elements[secondaryElement] = Math.floor(generateElementValue(level) * rarityMultiplier);
   }
 
   const price = Math.floor(basePrice * levelMultiplier * rarityMultiplier);
