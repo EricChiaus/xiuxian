@@ -60,6 +60,11 @@ export const useGame = () => {
     }));
   }, [gameState.player, addBattleLogEntry, setGameState]);
 
+  // Immediate save when player stats change (for regeneration)
+  useEffect(() => {
+    saveGame(gameState);
+  }, [gameState, saveGame]);
+
   // HP/MP regeneration when idle (not in battle)
   useEffect(() => {
     if (gameState.inBattle) return;
@@ -75,7 +80,8 @@ export const useGame = () => {
         const newMp = Math.min(prev.player.maxMp, prev.player.mp + mpRegen);
         
         // Stop EXP regeneration when at max level
-        const expRegen = prev.player.level >= 99 ? 0 : Math.floor(1 * timeDiff); // 1 EXP per second
+        // Only give EXP every 60 seconds (1 minute)
+        const expRegen = prev.player.level >= 99 ? 0 : (timeDiff >= 60 ? 1 : 0);
         let newPlayer = { ...prev.player, hp: newHp, mp: newMp, exp: prev.player.exp + expRegen };
         
         // Check for level up from idle EXP gain
