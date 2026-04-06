@@ -5,6 +5,8 @@ import EnemyGrid from './battle/EnemyGrid';
 import BattleActions from './battle/BattleActions';
 import BattleLogPanel from './battle/BattleLogPanel';
 
+import { Character } from '../types/game';
+
 interface BattleModalProps {
   inBattle: boolean;
   currentEnemy: Enemy | null;
@@ -18,6 +20,7 @@ interface BattleModalProps {
     coinsGained: number;
     expLost: number;
   } | null;
+  player: Character;
   onAction: (action: BattleAction) => void;
   onSelectEnemy: (enemyId: string) => void;
   onCloseModal: () => void;
@@ -32,6 +35,7 @@ const BattleModal: React.FC<BattleModalProps> = ({
   battleLog, 
   battleResult,
   rewards,
+  player,
   onAction,
   onSelectEnemy,
   onCloseModal
@@ -46,6 +50,12 @@ const BattleModal: React.FC<BattleModalProps> = ({
           <h2 className="text-2xl font-bold text-center" style={{ fontFamily: 'serif' }}>
             ⚔️ 修仙战斗 ⚔️
           </h2>
+        </div>
+
+        {/* Player Status Bar */}
+        <div className="flex justify-center items-center gap-8 bg-gradient-to-r from-blue-100 to-blue-200 rounded-xl p-3 mx-6 mt-4 mb-2 border-2 border-blue-400">
+          <div className="text-lg font-bold text-blue-900">HP: <span className="text-red-600">{player.hp}</span> / {player.maxHp}</div>
+          <div className="text-lg font-bold text-blue-900">MP: <span className="text-blue-600">{player.mp}</span> / {player.maxMp}</div>
         </div>
 
         {/* Battle Content */}

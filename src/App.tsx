@@ -94,6 +94,7 @@ function AppContent() {
           battleLog={gameState.battleLog}
           battleResult={gameState.battleResult}
           rewards={gameState.battleRewards}
+          player={gameState.player}
           onAction={performAction}
           onSelectEnemy={selectEnemy}
           onCloseModal={closeBattleModal}
