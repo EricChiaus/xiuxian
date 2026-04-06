@@ -34,6 +34,24 @@ describe('BattleModal', () => {
         battleLog={[]}
         battleResult={null}
         rewards={null}
+        player={{
+          hp: 100,
+          maxHp: 100,
+          mp: 50,
+          maxMp: 50,
+          pa: 10,
+          ma: 8,
+          pd: 5,
+          md: 5,
+          level: 1,
+          exp: 0,
+          expToNext: 100,
+          coin: 100,
+          inventory: [],
+          avatar: 'avatar1',
+          elements: { metal: 0, wood: 0, water: 0, fire: 0, earth: 0, yin: 0, yang: 0 },
+          elementResistance: { metal: 0, wood: 0, water: 0, fire: 0, earth: 0, yin: 0, yang: 0 }
+        }}
         onAction={onAction}
         onSelectEnemy={vi.fn()}
         onCloseModal={vi.fn()}
@@ -56,6 +74,24 @@ describe('BattleModal', () => {
         battleLog={[]}
         battleResult="victory"
         rewards={{ expGained: 10, coinsGained: 5, expLost: 0 }}
+        player={{
+          hp: 100,
+          maxHp: 100,
+          mp: 50,
+          maxMp: 50,
+          pa: 10,
+          ma: 8,
+          pd: 5,
+          md: 5,
+          level: 1,
+          exp: 0,
+          expToNext: 100,
+          coin: 100,
+          inventory: [],
+          avatar: 'avatar1',
+          elements: { metal: 0, wood: 0, water: 0, fire: 0, earth: 0, yin: 0, yang: 0 },
+          elementResistance: { metal: 0, wood: 0, water: 0, fire: 0, earth: 0, yin: 0, yang: 0 }
+        }}
         onAction={vi.fn()}
         onSelectEnemy={vi.fn()}
         onCloseModal={onCloseModal}

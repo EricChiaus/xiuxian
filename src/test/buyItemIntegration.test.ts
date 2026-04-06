@@ -1,19 +1,18 @@
-import { describe, it, expect, vi } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
-import { useShopInventory } from '../hooks/useShopInventory';
-import { createInitialCharacter } from '../utils/character';
-import { generateShopItems } from '../utils/shop';
-import { GameState, Equipment } from '../types/game';
+import { describe, it, expect, vi } from "vitest";
+import { renderHook, act } from "@testing-library/react";
+import { useShopInventory } from "../hooks/useShopInventory";
+import { createInitialCharacter } from "../utils/character";
+import { generateShopItems } from "../utils/shop";
+import { GameState, Equipment } from "../types/game";
 
 // Test the actual buyItem function integration
-describe('BuyItem Integration Tests', () => {
-  
-  it('should test actual buyItem function with real hook', () => {
+describe("BuyItem Integration Tests", () => {
+  it("should test actual buyItem function with real hook", () => {
     // Setup initial game state
     const initialPlayer = createInitialCharacter();
     const shopItems = generateShopItems(initialPlayer.level);
     const shopItem = shopItems[0];
-    
+
     const mockGameState: GameState = {
       player: initialPlayer,
       currentEnemy: null,
@@ -23,7 +22,9 @@ describe('BuyItem Integration Tests', () => {
       isPlayerTurn: true,
       lastSaveTime: Date.now(),
       battleLog: [],
-      shopItems: shopItems
+      shopItems: shopItems,
+      battleResult: null,
+      battleRewards: null,
     };
 
     const mockSetGameState = vi.fn();
@@ -31,8 +32,13 @@ describe('BuyItem Integration Tests', () => {
     const mockSaveGame = vi.fn();
 
     // Render the hook
-    const { result } = renderHook(() => 
-      useShopInventory(mockGameState, mockSetGameState, mockAddBattleLogEntry, mockSaveGame)
+    const { result } = renderHook(() =>
+      useShopInventory(
+        mockGameState,
+        mockSetGameState,
+        mockAddBattleLogEntry,
+        mockSaveGame,
+      ),
     );
 
     // Get the buyItem function
@@ -56,8 +62,6 @@ describe('BuyItem Integration Tests', () => {
 
     // Verify the purchase results
 
-
-
     // Basic checks
     expect(updatedPlayer.inventory).toHaveLength(1);
     expect(updatedPlayer.inventory[0].id).toBe(shopItem.id);
@@ -74,27 +78,29 @@ describe('BuyItem Integration Tests', () => {
     expect(equipment.sellPrice).toBe(Math.floor(equipment.price / 2));
   });
 
-  it('should test getAllEquipment after purchase', () => {
+  it("should test getAllEquipment after purchase", () => {
     // Setup initial game state with purchased item
     const initialPlayer = createInitialCharacter();
     const shopItems = generateShopItems(initialPlayer.level);
     const shopItem = shopItems[0];
-    
+
     // Simulate a purchased item in inventory
     const mockGameState: GameState = {
       player: {
         ...initialPlayer,
-        inventory: [{
-          id: shopItem.id,
-          name: shopItem.name,
-          type: shopItem.type,
-          rarity: shopItem.rarity,
-          level: shopItem.level,
-          bonus: { pa: 10 },
-          elements: { fire: 5 },
-          price: shopItem.price,
-          sellPrice: Math.floor(shopItem.price / 2)
-        }]
+        inventory: [
+          {
+            id: shopItem.id,
+            name: shopItem.name,
+            type: shopItem.equipmentData.type,
+            rarity: shopItem.equipmentData.rarity,
+            level: shopItem.equipmentData.level,
+            bonus: { pa: 10 },
+            elements: { fire: 5 },
+            price: shopItem.price,
+            sellPrice: Math.floor(shopItem.price / 2),
+          },
+        ],
       },
       currentEnemy: null,
       enemies: [],
@@ -103,7 +109,9 @@ describe('BuyItem Integration Tests', () => {
       isPlayerTurn: true,
       lastSaveTime: Date.now(),
       battleLog: [],
-      shopItems: shopItems
+      shopItems: shopItems,
+      battleResult: null,
+      battleRewards: null,
     };
 
     const mockSetGameState = vi.fn();
@@ -111,53 +119,55 @@ describe('BuyItem Integration Tests', () => {
     const mockSaveGame = vi.fn();
 
     // Render the hook
-    const { result } = renderHook(() => 
-      useShopInventory(mockGameState, mockSetGameState, mockAddBattleLogEntry, mockSaveGame)
+    const { result } = renderHook(() =>
+      useShopInventory(
+        mockGameState,
+        mockSetGameState,
+        mockAddBattleLogEntry,
+        mockSaveGame,
+      ),
     );
 
     // Get all equipment and inventory equipment
     const { getAllEquipment, getInventoryEquipment } = result.current;
     const allEquipment = getAllEquipment();
     const inventoryEquipment = getInventoryEquipment();
-    
-
-
 
     // Verify equipment retrieval
     expect(inventoryEquipment).toHaveLength(1);
     expect(inventoryEquipment[0].id).toBe(shopItem.id);
     expect(inventoryEquipment[0].name).toBe(shopItem.name);
-    expect(allEquipment[0].type).toBe(shopItem.type);
-    expect(allEquipment[0].rarity).toBe(shopItem.rarity);
-    expect(allEquipment[0].level).toBe(shopItem.level);
+    expect(allEquipment[0].type).toBe(shopItem.equipmentData.type);
+    expect(allEquipment[0].rarity).toBe(shopItem.equipmentData.rarity);
+    expect(allEquipment[0].level).toBe(shopItem.equipmentData.level);
     expect(allEquipment[0].bonus.pa).toBe(10);
     expect(allEquipment[0].elements.fire).toBe(5);
     expect(allEquipment[0].sellPrice).toBe(Math.floor(shopItem.price / 2));
   });
 
-  it('should test localStorage persistence simulation', () => {
+  it("should test localStorage persistence simulation", () => {
     // Simulate the complete flow: buy -> save -> load -> check
     const initialPlayer = createInitialCharacter();
     const shopItems = generateShopItems(initialPlayer.level);
     const shopItem = shopItems[0];
-    
+
     // Step 1: Purchase item (simulate buyItem logic)
     const purchasedEquipment = {
       id: shopItem.id,
       name: shopItem.name,
       type: shopItem.type,
-      rarity: shopItem.rarity,
-      level: shopItem.level,
+      rarity: shopItem.equipmentData.rarity,
+      level: shopItem.equipmentData.level,
       bonus: { pa: 10 },
       elements: { fire: 5 },
       price: shopItem.price,
-      sellPrice: Math.floor(shopItem.price / 2)
+      sellPrice: Math.floor(shopItem.price / 2),
     };
 
     const afterPurchase = {
       ...initialPlayer,
       coin: initialPlayer.coin - shopItem.price,
-      inventory: [purchasedEquipment]
+      inventory: [purchasedEquipment],
     };
 
     // Step 2: Save to localStorage (simulate)
@@ -170,7 +180,7 @@ describe('BuyItem Integration Tests', () => {
       isPlayerTurn: true,
       lastSaveTime: Date.now(),
       battleLog: [],
-      shopItems: shopItems
+      shopItems: shopItems,
     };
 
     const savedData = JSON.stringify(gameState);
@@ -181,11 +191,12 @@ describe('BuyItem Integration Tests', () => {
 
     // Step 4: Verify the loaded data
 
-
     expect(loadedPlayer.inventory).toHaveLength(1);
     expect(loadedPlayer.inventory[0].id).toBe(purchasedEquipment.id);
-    
-    const loadedEquipment = loadedPlayer.inventory.find((eq: Equipment) => eq.id === purchasedEquipment.id);
+
+    const loadedEquipment = loadedPlayer.inventory.find(
+      (eq: Equipment) => eq.id === purchasedEquipment.id,
+    );
     expect(loadedEquipment).toBeDefined();
     expect(loadedEquipment.id).toBe(purchasedEquipment.id);
     expect(loadedEquipment.name).toBe(purchasedEquipment.name);
