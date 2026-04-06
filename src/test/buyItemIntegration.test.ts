@@ -184,7 +184,8 @@ describe('BuyItem Integration Tests', () => {
     // Step 4: Verify the loaded data
     console.log('Loaded player:', loadedPlayer);
 
-    expect(loadedPlayer.inventory).toContain(purchasedEquipment);
+    expect(loadedPlayer.inventory).toHaveLength(1);
+    expect(loadedPlayer.inventory[0].id).toBe(purchasedEquipment.id);
     
     const loadedEquipment = loadedPlayer.inventory.find((eq: Equipment) => eq.id === purchasedEquipment.id);
     expect(loadedEquipment).toBeDefined();
