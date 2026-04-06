@@ -3,7 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useShopInventory } from '../hooks/useShopInventory';
 import { createInitialCharacter } from '../utils/character';
 import { generateShopItems } from '../utils/shop';
-import { GameState } from '../types/game';
+import { GameState, Equipment } from '../types/game';
 
 // Test the actual buyItem function integration
 describe('BuyItem Integration Tests', () => {
@@ -56,7 +56,6 @@ describe('BuyItem Integration Tests', () => {
 
     // Verify the purchase results
     console.log('Updated player:', updatedPlayer);
-    console.log('Player equipment:', updatedPlayer.playerEquipment);
     console.log('Inventory:', updatedPlayer.inventory);
 
     // Basic checks
@@ -160,10 +159,7 @@ describe('BuyItem Integration Tests', () => {
     const afterPurchase = {
       ...initialPlayer,
       coin: initialPlayer.coin - shopItem.price,
-      inventory: [shopItem.id],
-      playerEquipment: {
-        [shopItem.id]: purchasedEquipment
-      }
+      inventory: [purchasedEquipment]
     };
 
     // Step 2: Save to localStorage (simulate)
@@ -176,10 +172,7 @@ describe('BuyItem Integration Tests', () => {
       isPlayerTurn: true,
       lastSaveTime: Date.now(),
       battleLog: [],
-      offlineExp: 0,
-      lastRegenerationTime: Date.now(),
-      shopItems: shopItems,
-      playerEquipment: afterPurchase.playerEquipment
+      shopItems: shopItems
     };
 
     const savedData = JSON.stringify(gameState);
@@ -190,15 +183,14 @@ describe('BuyItem Integration Tests', () => {
 
     // Step 4: Verify the loaded data
     console.log('Loaded player:', loadedPlayer);
-    console.log('Loaded equipment:', loadedPlayer.playerEquipment);
 
-    expect(loadedPlayer.inventory).toContain(shopItem.id);
-    expect(loadedPlayer.playerEquipment[shopItem.id]).toBeDefined();
+    expect(loadedPlayer.inventory).toContain(purchasedEquipment);
     
-    const loadedEquipment = loadedPlayer.playerEquipment[shopItem.id];
-    expect(loadedEquipment.id).toBe(shopItem.id);
-    expect(loadedEquipment.name).toBe(shopItem.name);
-    expect(loadedEquipment.type).toBe('weapon');
+    const loadedEquipment = loadedPlayer.inventory.find((eq: Equipment) => eq.id === purchasedEquipment.id);
+    expect(loadedEquipment).toBeDefined();
+    expect(loadedEquipment.id).toBe(purchasedEquipment.id);
+    expect(loadedEquipment.name).toBe(purchasedEquipment.name);
+    expect(loadedEquipment.type).toBe(purchasedEquipment.type);
     expect(loadedEquipment.rarity).toBe('common');
     expect(loadedEquipment.level).toBe(1);
     expect(loadedEquipment.bonus.pa).toBe(10);
