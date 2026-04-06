@@ -150,19 +150,39 @@ export const useShopInventory = (
     setGameState((prev: GameState) => {
       const newPlayer = { ...prev.player };
       
-      // Unequip current item in the same slot if exists
-      const currentlyEquipped = prev.player.inventory.find(eq => eq.equipped && eq.type === equipment.type);
-      if (currentlyEquipped) {
-        // Mark the old item as unequipped
+      // For accessories, check if there's an empty slot first
+      if (equipment.type === 'accessory') {
+        const equippedAccessories = prev.player.inventory.filter(eq => eq.equipped && eq.type === 'accessory');
+        
+        // If we have less than 2 accessories equipped, just equip the new one
+        if (equippedAccessories.length < 2) {
+          // Equip the new item without unequipping anything
+          newPlayer.inventory = newPlayer.inventory.map(eq => 
+            eq.id === itemId ? { ...eq, equipped: true } : eq
+          );
+        } else {
+          // Both slots are filled, unequip the first one
+          const firstAccessory = equippedAccessories[0];
+          newPlayer.inventory = newPlayer.inventory.map(eq => 
+            eq.id === firstAccessory.id ? { ...eq, equipped: false } : 
+            eq.id === itemId ? { ...eq, equipped: true } : eq
+          );
+        }
+      } else {
+        // For non-accessory items, unequip current item in the same slot if exists
+        const currentlyEquipped = prev.player.inventory.find(eq => eq.equipped && eq.type === equipment.type);
+        if (currentlyEquipped) {
+          // Mark the old item as unequipped
+          newPlayer.inventory = newPlayer.inventory.map(eq => 
+            eq.id === currentlyEquipped.id ? { ...eq, equipped: false } : eq
+          );
+        }
+        
+        // Equip the new item
         newPlayer.inventory = newPlayer.inventory.map(eq => 
-          eq.id === currentlyEquipped.id ? { ...eq, equipped: false } : eq
+          eq.id === itemId ? { ...eq, equipped: true } : eq
         );
       }
-      
-      // Equip the new item
-      newPlayer.inventory = newPlayer.inventory.map(eq => 
-        eq.id === itemId ? { ...eq, equipped: true } : eq
-      );
       
       // Recalculate stats based on equipped items
       const equippedItems = newPlayer.inventory.filter(eq => eq.equipped);
