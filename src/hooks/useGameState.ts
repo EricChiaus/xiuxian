@@ -7,7 +7,21 @@ import { generateShopItems } from '../utils/shop';
 const loadGame = () => {
   try {
     const saved = localStorage.getItem('xiuxian-save');
-    return saved ? JSON.parse(saved) : null;
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      
+      // Migration: Check if we have old saved data with inventory items but no playerEquipment data
+      if (parsed.player && parsed.player.inventory && parsed.player.inventory.length > 0 && 
+          (!parsed.playerEquipment || Object.keys(parsed.playerEquipment).length === 0)) {
+        console.log('Detected old saved data format - clearing inventory to prevent display issues');
+        // Clear the inventory since we can't restore the equipment data
+        parsed.player.inventory = [];
+        parsed.playerEquipment = {};
+      }
+      
+      return parsed;
+    }
+    return null;
   } catch {
     return null;
   }
