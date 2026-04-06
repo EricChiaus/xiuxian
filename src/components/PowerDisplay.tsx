@@ -39,7 +39,7 @@ const PowerDisplay: React.FC<PowerDisplayProps> = ({
                   className="px-2 py-1 rounded text-xs font-bold text-white border border-gray-800"
                   style={{ backgroundColor: getElementColor(element) }}
                 >
-                  {getElementName(element)} {value}
+                  {getElementName(element)} {Math.floor(value)}
                 </div>
               );
             })}
@@ -68,7 +68,7 @@ const PowerDisplay: React.FC<PowerDisplayProps> = ({
                       color: getElementColor(element)
                     }}
                   >
-                    {getElementName(element)} {value}
+                    {getElementName(element)} {Math.floor(value)}
                   </div>
                 );
               })}
