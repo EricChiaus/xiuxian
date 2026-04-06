@@ -249,15 +249,31 @@ export const useBattle = (
           return battleEndState;
         }
 
-        // Update current enemy to first alive enemy
-        const firstAliveEnemy = newEnemies.find(e => e.hp > 0);
+        // Preserve player's selected enemy if it's still alive, otherwise select first alive enemy
+        let currentEnemy = null;
+        let selectedEnemyId = prev.selectedEnemyId;
+        
+        if (selectedEnemyId) {
+          const previouslySelectedEnemy = newEnemies.find(e => e.id === selectedEnemyId && e.hp > 0);
+          if (previouslySelectedEnemy) {
+            currentEnemy = previouslySelectedEnemy;
+          } else {
+            // Previously selected enemy is dead, select first alive enemy
+            currentEnemy = newEnemies.find(e => e.hp > 0) || null;
+            selectedEnemyId = currentEnemy?.id || null;
+          }
+        } else {
+          // No previous selection, select first alive enemy
+          currentEnemy = newEnemies.find(e => e.hp > 0) || null;
+          selectedEnemyId = currentEnemy?.id || null;
+        }
 
         return {
           ...prev,
           player: newPlayer,
           enemies: newEnemies,
-          currentEnemy: firstAliveEnemy || null,
-          selectedEnemyId: firstAliveEnemy?.id || null,
+          currentEnemy,
+          selectedEnemyId,
           isPlayerTurn: true
         };
       });
