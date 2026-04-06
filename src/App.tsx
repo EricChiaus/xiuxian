@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSkyTower } from './hooks/useSkyTower';
-import SkyTowerModal from './components/SkyTowerModal';
+// import SkyTowerModal from './components/SkyTowerModal';
 import CharacterPanel from './components/CharacterPanel';
 import BattleArea from './components/BattleArea';
 import BattleModal from './components/BattleModal';
@@ -106,16 +106,16 @@ function AppContent() {
               <h2 className="text-2xl font-bold text-blue-900 mb-2" style={{ fontFamily: 'serif' }}>🗼 天空之塔</h2>
               <div className="text-lg text-blue-800 mb-2">当前最高层: {skyTowerFloor}
               {showSkyTowerModal && (
-  // @ts-ignore
-  <SkyTowerModal
+  <BattleModal
     inBattle={true}
+    currentEnemy={skyTowerEnemies[0]}
     enemies={skyTowerEnemies}
-    player={skyTowerPlayer}
     selectedEnemyId={skyTowerEnemies[0]?.id}
     isPlayerTurn={skyTowerTurn}
     battleLog={skyTowerLog}
     battleResult={skyTowerBattleResult}
     rewards={skyTowerRewards}
+    player={skyTowerPlayer}
     onAction={handleSkyTowerAction}
     onSelectEnemy={() => {}}
     onCloseModal={closeSkyTowerModal}
