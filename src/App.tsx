@@ -26,10 +26,11 @@ function AppContent() {
     skyTowerPlayer,
     skyTowerLog,
     skyTowerTurn,
+    skyTowerSelectedEnemyId,
     openSkyTowerModal,
     handleSkyTowerAction,
     closeSkyTowerModal,
-    // setSkyTowerPlayer is not used
+    setSkyTowerSelectedEnemyId
   } = useSkyTower(gameState.player);
 
   // --- END OF HOOKS AND STATE ---
@@ -108,16 +109,16 @@ function AppContent() {
               {showSkyTowerModal && (
   <BattleModal
     inBattle={true}
-    currentEnemy={skyTowerEnemies[0]}
+    currentEnemy={skyTowerEnemies.find(e => e.id === skyTowerSelectedEnemyId && e.hp > 0) || skyTowerEnemies.find(e => e.hp > 0) || null}
     enemies={skyTowerEnemies}
-    selectedEnemyId={skyTowerEnemies[0]?.id}
+    selectedEnemyId={skyTowerSelectedEnemyId}
     isPlayerTurn={skyTowerTurn}
     battleLog={skyTowerLog}
     battleResult={skyTowerBattleResult}
     rewards={skyTowerRewards}
     player={skyTowerPlayer}
     onAction={handleSkyTowerAction}
-    onSelectEnemy={() => {}}
+    onSelectEnemy={setSkyTowerSelectedEnemyId}
     onCloseModal={closeSkyTowerModal}
   />
 )}</div>

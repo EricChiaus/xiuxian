@@ -11,6 +11,7 @@ export interface SkyTowerRewards {
 }
 
 export function useSkyTower(initialPlayer: Character) {
+  const [skyTowerSelectedEnemyId, setSkyTowerSelectedEnemyId] = useState<string | null>(null);
   const [skyTowerFloor, setSkyTowerFloor] = useState(() => {
     const stored = localStorage.getItem('skyTowerFloor');
     return stored ? parseInt(stored, 10) : 0;
@@ -44,6 +45,13 @@ export function useSkyTower(initialPlayer: Character) {
 
   // Handle Sky Tower battle actions
   const handleSkyTowerAction = (action: string) => {
+    // Auto-select next alive enemy if needed
+    let selectedId = skyTowerSelectedEnemyId;
+    if (!selectedId || !skyTowerEnemies.find(e => e.id === selectedId && e.hp > 0)) {
+      const nextAlive = skyTowerEnemies.find(e => e.hp > 0);
+      selectedId = nextAlive ? nextAlive.id : null;
+      setSkyTowerSelectedEnemyId(selectedId);
+    }
     if (!skyTowerTurn || skyTowerBattleResult) return;
     const targetIdx = skyTowerEnemies.findIndex(e => e.hp > 0);
     if (targetIdx === -1) return;
@@ -139,9 +147,11 @@ export function useSkyTower(initialPlayer: Character) {
     skyTowerPlayer,
     skyTowerLog,
     skyTowerTurn,
+    skyTowerSelectedEnemyId,
     openSkyTowerModal,
     handleSkyTowerAction,
     closeSkyTowerModal,
-    setSkyTowerPlayer
+    setSkyTowerPlayer,
+    setSkyTowerSelectedEnemyId
   };
 }
