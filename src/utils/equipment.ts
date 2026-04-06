@@ -1,4 +1,4 @@
-import { Character, Equipment, ElementType, Elements, ElementResistance, getElementName, getRarityName } from '../types/game';
+import { Character, Equipment, ElementType, Elements, ElementResistance, getElementMultiplier, getElementName, getRarityName } from '../types/game';
 
 export interface ItemStats {
   pa?: number;
@@ -242,6 +242,51 @@ export const getHighestElement = (elements: Partial<Elements> | null | undefined
   });
   
   return { element: highestElement, value: highestValue };
+};
+
+export const getAllElementDamage = (attackerElements: Partial<Elements> | null | undefined, targetResistance: Partial<ElementResistance> | null | undefined, targetElements: Partial<Elements> | null | undefined): { totalDamage: number; elementDamages: Array<{ element: ElementType; damage: number; resisted: boolean }> } => {
+  const elementDamages: Array<{ element: ElementType; damage: number; resisted: boolean }> = [];
+  let totalDamage = 0;
+
+  if (!attackerElements || !targetResistance) {
+    return { totalDamage: 0, elementDamages: [] };
+  }
+
+  Object.entries(attackerElements).forEach(([element, value]) => {
+    if (!value || value <= 0) return;
+
+    const elementType = element as ElementType;
+    let damage = value;
+    let resisted = false;
+
+    // Apply element resistance
+    const resistance = targetResistance[elementType] || 0;
+    const resistanceReduction = Math.min(0.5, resistance * 0.05); // Max 50% reduction
+    
+    if (resistanceReduction > 0) {
+      damage = Math.floor(damage * (1 - resistanceReduction));
+      resisted = true;
+    }
+
+    // Apply element interaction multiplier if target has elements
+    if (targetElements) {
+      const targetHighestElement = getHighestElement(targetElements);
+      if (targetHighestElement.element) {
+        const multiplier = getElementMultiplier(elementType, targetHighestElement.element);
+        damage = Math.floor(damage * multiplier);
+      }
+    }
+
+    elementDamages.push({
+      element: elementType,
+      damage,
+      resisted
+    });
+
+    totalDamage += damage;
+  });
+
+  return { totalDamage, elementDamages };
 };
 
 export const equipItem = (character: Character, itemId: string): Character => {

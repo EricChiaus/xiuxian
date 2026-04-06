@@ -1,5 +1,5 @@
 import { Character, Enemy, BattleAction, getElementMultiplier, BattleLogEntry } from '../types/game';
-import { getHighestElement } from './equipment';
+import { getHighestElement, getAllElementDamage } from './equipment';
 import { calculateDamage, calculateHeal, chooseEnemyAction } from './enemies';
 import { restoreHp, useMp, regenerateHpMpExp, calculateTurnRegeneration } from './character';
 
@@ -15,37 +15,22 @@ export const performPlayerAction = (
 
   switch (action) {
     case 'attack':
-      // Get player's highest power
-      const playerPower = getHighestElement(character.elements);
-      const enemyPower = getHighestElement(enemy.elements);
-      
+      // Calculate base physical damage
       let baseDamage = calculateDamage(character.pa, enemy.pd, 5);
-      let powerDamage = 0;
-      let damageType = 'physical';
       
-      // Apply power damage if player has Elements
-      if (playerPower.element && playerPower.value > 0 && enemy.elementResistance) {
-        powerDamage = playerPower.value;
-        
-        // Calculate power multiplier based on element interaction
-        let powerMultiplier = 1.0;
-        if (enemyPower.element) {
-          powerMultiplier = getElementMultiplier(playerPower.element, enemyPower.element);
-        }
-        
-        // Apply enemy resistance to the power type
-        const resistance = enemy.elementResistance[playerPower.element] || 0;
-        const resistanceReduction = Math.min(0.5, resistance * 0.05); // Max 50% reduction
-        
-        powerDamage = Math.floor(powerDamage * powerMultiplier * (1 - resistanceReduction));
-        damageType = `${playerPower.element}`;
-      }
+      // Calculate damage from ALL elements
+      const elementDamageResult = getAllElementDamage(character.elements, enemy.elementResistance, enemy.elements);
+      const totalElementDamage = elementDamageResult.totalDamage;
       
-      const totalDamage = baseDamage + powerDamage;
+      const totalDamage = baseDamage + totalElementDamage;
       newEnemy.hp = Math.max(0, newEnemy.hp - totalDamage);
       
-      if (powerDamage > 0) {
-        message = `You attack for ${baseDamage} damage + ${powerDamage} ${damageType} power damage!`;
+      // Build detailed damage message
+      if (totalElementDamage > 0) {
+        const elementDetails = elementDamageResult.elementDamages
+          .map(ed => `${ed.damage} ${ed.element}${ed.resisted ? ' (resisted)' : ''}`)
+          .join(' + ');
+        message = `You attack for ${baseDamage} physical damage + ${elementDetails} element damage! Total: ${totalDamage}`;
       } else {
         message = `You attack for ${totalDamage} damage!`;
       }
@@ -148,35 +133,22 @@ export const performEnemyAction = (
 
   switch (action) {
     case 'attack':
-      // Get enemy's highest power
-      const enemyPower = getHighestElement(enemy.elements);
-      const playerPower = getHighestElement(character.elements);
-      
+      // Calculate base physical damage
       let baseDamage = calculateDamage(enemy.pa, character.pd, 4);
-      let powerDamage = 0;
       
-      // Apply power damage if enemy has Elements
-      if (enemyPower.element && enemyPower.value > 0 && character.elementResistance) {
-        powerDamage = enemyPower.value;
-        
-        // Calculate power multiplier based on element interaction
-        let powerMultiplier = 1.0;
-        if (playerPower.element) {
-          powerMultiplier = getElementMultiplier(enemyPower.element, playerPower.element);
-        }
-        
-        // Apply player resistance to the power type
-        const resistance = character.elementResistance[enemyPower.element] || 0;
-        const resistanceReduction = Math.min(0.5, resistance * 0.05); // Max 50% reduction
-        
-        powerDamage = Math.floor(powerDamage * powerMultiplier * (1 - resistanceReduction));
-      }
+      // Calculate damage from ALL elements
+      const elementDamageResult = getAllElementDamage(enemy.elements, character.elementResistance, character.elements);
+      const totalElementDamage = elementDamageResult.totalDamage;
       
-      const totalDamage = baseDamage + powerDamage;
+      const totalDamage = baseDamage + totalElementDamage;
       newCharacter.hp = Math.max(0, newCharacter.hp - totalDamage);
       
-      if (powerDamage > 0) {
-        message = `${enemy.name} attacks for ${baseDamage} damage + ${powerDamage} ${enemyPower.element} power damage!`;
+      // Build detailed damage message
+      if (totalElementDamage > 0) {
+        const elementDetails = elementDamageResult.elementDamages
+          .map(ed => `${ed.damage} ${ed.element}${ed.resisted ? ' (resisted)' : ''}`)
+          .join(' + ');
+        message = `${enemy.name} attacks for ${baseDamage} physical damage + ${elementDetails} element damage! Total: ${totalDamage}`;
       } else {
         message = `${enemy.name} attacks for ${totalDamage} damage!`;
       }
