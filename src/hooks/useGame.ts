@@ -61,11 +61,6 @@ export const useGame = () => {
     }));
   }, [gameState.player, addBattleLogEntry, setGameState]);
 
-  // Immediate save when player stats change (for regeneration)
-  useEffect(() => {
-    saveGame(gameState);
-  }, [gameState, saveGame]);
-
   // HP/MP regeneration when idle (not in battle)
   useEffect(() => {
     if (gameState.inBattle) return;
@@ -98,11 +93,16 @@ export const useGame = () => {
         }
         
         if (newHp > prev.player.hp || newMp > prev.player.mp || newPlayer.exp > prev.player.exp) {
-          return {
+          const newState = {
             ...prev,
             player: newPlayer,
             lastRegenerationTime: Date.now()
           };
+          
+          // Save game when regeneration actually happens
+          saveGame(newState);
+          
+          return newState;
         }
         
         return prev;
@@ -110,7 +110,7 @@ export const useGame = () => {
     }, 5000); // Check every 5 seconds
 
     return () => clearInterval(regenerationInterval);
-  }, [gameState.inBattle, setGameState, addBattleLogEntry]);
+  }, [gameState.inBattle, setGameState, addBattleLogEntry, saveGame]);
 
   return {
     gameState,
