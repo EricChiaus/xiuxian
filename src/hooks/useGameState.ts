@@ -7,31 +7,68 @@ import { generateShopItems } from '../utils/shop';
 const loadGame = () => {
   try {
     const saved = localStorage.getItem('xiuxian-save');
+    
     if (saved) {
       const parsed = JSON.parse(saved);
       
-      // Migration: Check if we have old saved data with inventory items but no playerEquipment data
-      if (parsed.player && parsed.player.inventory && parsed.player.inventory.length > 0 && 
-          (!parsed.playerEquipment || Object.keys(parsed.playerEquipment).length === 0)) {
-        console.log('Detected old saved data format - clearing inventory to prevent display issues');
-        // Clear the inventory since we can't restore the equipment data
-        parsed.player.inventory = [];
-        parsed.playerEquipment = {};
+      // Fix: Use nested playerEquipment if root is empty
+      if (!parsed.playerEquipment || Object.keys(parsed.playerEquipment).length === 0) {
+        if (parsed.player?.playerEquipment && Object.keys(parsed.player.playerEquipment).length > 0) {
+          parsed.playerEquipment = parsed.player.playerEquipment;
+        }
+      }
+      
+      // Fix: Ensure all equipped items are in inventory and have equipment data
+      if (parsed.player?.equippedItems) {
+        const equippedItemIds = Object.values(parsed.player.equippedItems).filter((id): id is string => Boolean(id));
+        
+        equippedItemIds.forEach(itemId => {
+          // Add to inventory if not present
+          if (!parsed.player.inventory.includes(itemId)) {
+            parsed.player.inventory.push(itemId);
+          }
+          
+          // Add equipment data if missing
+          if (!parsed.playerEquipment[itemId]) {
+            parsed.playerEquipment[itemId] = {
+              id: itemId,
+              name: 'Equipped Item',
+              type: 'weapon',
+              rarity: 'common',
+              level: 1,
+              bonus: {},
+              elements: {},
+              elementResistance: {},
+              price: 100,
+              sellPrice: 50
+            };
+          }
+        });
       }
       
       return parsed;
     }
     return null;
-  } catch {
+  } catch (error) {
     return null;
   }
 };
 
 const saveGame = (state: GameState) => {
   try {
-    // Create a save state without shopItems (should be randomly generated)
+    // Don't save during battle - only save after battle completion
+    if (state.inBattle) {
+      console.log('Skipping save during battle');
+      return;
+    }
+    
+    // Create a clean save state without battle-related data
     const saveState = {
-      ...state,
+      player: state.player,
+      playerEquipment: state.playerEquipment,
+      lastSaveTime: Date.now(),
+      lastRegenerationTime: state.lastRegenerationTime,
+      offlineExp: state.offlineExp,
       shopItems: [] // Don't save shop items - they should be randomly generated
     };
     localStorage.setItem('xiuxian-save', JSON.stringify(saveState));

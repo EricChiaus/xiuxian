@@ -20,7 +20,8 @@ export const useGame = () => {
   const { startBattle, performAction, selectEnemy } = useBattle(
     gameState,
     setGameState,
-    addBattleLogEntry
+    addBattleLogEntry,
+    saveGame
   );
 
   // Shop and inventory system

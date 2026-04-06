@@ -14,7 +14,8 @@ import {
 export const useBattle = (
   gameState: GameState,
   setGameState: React.Dispatch<React.SetStateAction<GameState>>,
-  addBattleLogEntry: (entry: BattleLogEntry) => void
+  addBattleLogEntry: (entry: BattleLogEntry) => void,
+  saveGame: (state: GameState) => void
 ) => {
   const startBattle = useCallback(() => {
     if (gameState.inBattle) return;
@@ -108,20 +109,28 @@ export const useBattle = (
         });
       }
 
-      setGameState(prev => ({
-        ...prev,
-        player: newPlayer,
-        currentEnemy: null,
-        enemies: [],
-        selectedEnemyId: null,
-        inBattle: false,
-        isPlayerTurn: true,
-        battleLog: [...prev.battleLog, {
-          message: `Victory! You gained ${totalExp} EXP and ${totalCoins} coins!`,
-          type: 'system',
-          timestamp: Date.now()
-        }]
-      }));
+      setGameState(prev => {
+        const battleEndState = {
+          ...prev,
+          player: newPlayer,
+          currentEnemy: null,
+          enemies: [],
+          selectedEnemyId: null,
+          inBattle: false,
+          isPlayerTurn: true,
+          battleLog: [...prev.battleLog, {
+            message: `Victory! You gained ${totalExp} EXP and ${totalCoins} coins!`,
+            type: 'system' as const,
+            timestamp: Date.now()
+          }]
+        };
+        
+        // Save game after battle victory
+        saveGame(battleEndState);
+        
+        return battleEndState;
+      });
+      
       return;
     }
 
@@ -133,20 +142,27 @@ export const useBattle = (
       newPlayer.hp = Math.floor(newPlayer.maxHp * 0.5);
       newPlayer.mp = Math.floor(newPlayer.maxMp * 0.5);
 
-      setGameState(prev => ({
-        ...prev,
-        player: newPlayer,
-        currentEnemy: null,
-        enemies: [],
-        selectedEnemyId: null,
-        inBattle: false,
-        isPlayerTurn: true,
-        battleLog: [...prev.battleLog, {
-          message: `Defeat! You lost ${expLoss} EXP!`,
-          type: 'system',
-          timestamp: Date.now()
-        }]
-      }));
+      setGameState(prev => {
+        const battleEndState = {
+          ...prev,
+          player: newPlayer,
+          currentEnemy: null,
+          enemies: [],
+          selectedEnemyId: null,
+          inBattle: false,
+          isPlayerTurn: true,
+          battleLog: [...prev.battleLog, {
+            message: `Defeat! You lost ${expLoss} EXP!`,
+            type: 'system' as const,
+            timestamp: Date.now()
+          }]
+        };
+        
+        // Save game after battle defeat
+        saveGame(battleEndState);
+        
+        return battleEndState;
+      });
       return;
     }
 
@@ -202,7 +218,7 @@ export const useBattle = (
             });
           }
 
-          return {
+          const battleEndState = {
             ...prev,
             player: finalPlayer,
             currentEnemy: null,
@@ -212,10 +228,15 @@ export const useBattle = (
             isPlayerTurn: true,
             battleLog: [...prev.battleLog, {
               message: `Victory! You gained ${totalExp} EXP and ${totalCoins} coins!`,
-              type: 'system',
+              type: 'system' as const,
               timestamp: Date.now()
             }]
           };
+          
+          // Save game after battle victory
+          saveGame(battleEndState);
+          
+          return battleEndState;
         }
 
         if (playerDefeated) {
@@ -226,7 +247,7 @@ export const useBattle = (
           finalPlayer.hp = Math.floor(finalPlayer.maxHp * 0.5);
           finalPlayer.mp = Math.floor(finalPlayer.maxMp * 0.5);
 
-          return {
+          const battleEndState = {
             ...prev,
             player: finalPlayer,
             currentEnemy: null,
@@ -236,10 +257,15 @@ export const useBattle = (
             isPlayerTurn: true,
             battleLog: [...prev.battleLog, {
               message: `Defeat! You lost ${expLoss} EXP!`,
-              type: 'system',
+              type: 'system' as const,
               timestamp: Date.now()
             }]
           };
+          
+          // Save game after battle defeat
+          saveGame(battleEndState);
+          
+          return battleEndState;
         }
 
         // Update current enemy to first alive enemy
