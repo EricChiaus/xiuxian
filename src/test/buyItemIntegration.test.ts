@@ -36,7 +36,7 @@ describe('BuyItem Integration Tests', () => {
     );
 
     // Get the buyItem function
-    const { buyItem, getAllEquipment } = result.current;
+    const { buyItem } = result.current;
 
     // Check initial state
     expect(mockGameState.player.inventory).toHaveLength(0);

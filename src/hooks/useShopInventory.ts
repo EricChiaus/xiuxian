@@ -192,7 +192,7 @@ export const useShopInventory = (
       const newPlayer = { ...prev.player };
       
       // Remove from equipped items
-      const { [slot]: removedItem, ...restEquippedItems } = prev.player.equippedItems;
+      const { [slot]: _removedItem, ...restEquippedItems } = prev.player.equippedItems;
       newPlayer.equippedItems = restEquippedItems;
       
       // Mark the item as unequipped in inventory

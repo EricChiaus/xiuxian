@@ -8,7 +8,7 @@ import Profile from './components/Profile';
 import { getCultivatorLevelName } from './types/game';
 
 function App() {
-  const { gameState, setGameState, startBattle, performAction, manualLevelUp, resetGame, buyItem, sellItem, equipItem, unequipItem, refreshShop, selectEnemy, getAllEquipment, getInventoryEquipment, getAvailableShopItems } = useGame();
+  const { gameState, setGameState, startBattle, performAction, manualLevelUp, resetGame, buyItem, sellItem, equipItem, unequipItem, refreshShop, selectEnemy, getInventoryEquipment, getAvailableShopItems } = useGame();
   const [showShop, setShowShop] = useState(false);
   const [showInventory, setShowInventory] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
