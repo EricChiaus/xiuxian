@@ -55,8 +55,8 @@ describe('BuyItem Integration Tests', () => {
     const updatedPlayer = updateCall(mockGameState).player;
 
     // Verify the purchase results
-    console.log('Updated player:', updatedPlayer);
-    console.log('Inventory:', updatedPlayer.inventory);
+
+
 
     // Basic checks
     expect(updatedPlayer.inventory).toHaveLength(1);
@@ -120,8 +120,8 @@ describe('BuyItem Integration Tests', () => {
     const allEquipment = getAllEquipment();
     const inventoryEquipment = getInventoryEquipment();
     
-    console.log('All equipment:', allEquipment);
-    console.log('Inventory equipment:', inventoryEquipment);
+
+
 
     // Verify equipment retrieval
     expect(inventoryEquipment).toHaveLength(1);
@@ -180,7 +180,7 @@ describe('BuyItem Integration Tests', () => {
     const loadedPlayer = loadedData.player;
 
     // Step 4: Verify the loaded data
-    console.log('Loaded player:', loadedPlayer);
+
 
     expect(loadedPlayer.inventory).toHaveLength(1);
     expect(loadedPlayer.inventory[0].id).toBe(purchasedEquipment.id);
