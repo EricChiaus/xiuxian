@@ -70,33 +70,14 @@ export const useGame = () => {
         // Don't give EXP if at max level
         if (prev.player.level >= 99) return prev;
         
-        const newPlayer = { ...prev.player, exp: prev.player.exp + 1 };
+        // Check if EXP is at cap
+        if (prev.player.exp >= prev.player.expToNext) return prev;
         
-        // Check for level up
-        if (canLevelUp(newPlayer)) {
-          let finalPlayer = newPlayer;
-          
-          // Level up as many times as possible
-          while (canLevelUp(finalPlayer)) {
-            finalPlayer = levelUp(finalPlayer);
-            addBattleLogEntry({
-              message: `Auto Level Up! Now level ${finalPlayer.level}!`,
-              type: 'system',
-              timestamp: Date.now()
-            });
-          }
-          
-          const newState = {
-            ...prev,
-            player: finalPlayer
-          };
-          
-          // Save after auto level up
-          saveGame(newState);
-          return newState;
-        }
+        // Add 1 EXP, but don't exceed cap
+        const newExp = Math.min(prev.player.exp + 1, prev.player.expToNext);
+        const newPlayer = { ...prev.player, exp: newExp };
         
-        // Save after EXP gain
+        // No auto level up - just save the EXP gain
         const newState = {
           ...prev,
           player: newPlayer
@@ -108,7 +89,7 @@ export const useGame = () => {
     }, 10000); // Every 10 seconds
 
     return () => clearInterval(expInterval);
-  }, [gameState.inBattle, setGameState, addBattleLogEntry, saveGame]);
+  }, [gameState.inBattle, setGameState, saveGame]);
 
   return {
     gameState,

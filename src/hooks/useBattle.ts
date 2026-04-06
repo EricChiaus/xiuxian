@@ -1,15 +1,11 @@
 import { useCallback } from 'react';
-import { Enemy, BattleLogEntry, BattleAction, GameState } from '../types/game';
-import { generateMultipleEnemies } from '../utils/enemies';
+import { GameState, BattleLogEntry, Enemy, BattleAction } from '../types/game';
+import { gainExp } from '../utils/character';
 import { 
   performPlayerAction, 
   performEnemyAction
 } from '../utils/battle';
-import { 
-  levelUp, 
-  gainExp, 
-  canLevelUp
-} from '../utils/character';
+import { generateMultipleEnemies } from '../utils/enemies';
 
 export const useBattle = (
   gameState: GameState,
@@ -67,18 +63,7 @@ export const useBattle = (
       });
     }
 
-    // Check for level up from idle EXP gain
-    if (playerResult.character.exp >= playerResult.character.expToNext) {
-      while (canLevelUp(playerResult.character)) {
-        const leveledUpCharacter = levelUp(playerResult.character);
-        addBattleLogEntry({
-          message: `Level Up! Now level ${leveledUpCharacter.level}!`,
-          type: 'system',
-          timestamp: Date.now()
-        });
-        playerResult.character = leveledUpCharacter;
-      }
-    }
+    // No auto level up - players must level up manually
 
     // Update game state with damaged enemy and player changes
     setGameState(prev => ({
@@ -99,15 +84,9 @@ export const useBattle = (
       let newPlayer = gainExp(playerResult.character, totalExp);
       newPlayer.coin += totalCoins;
 
-      // Auto level up if possible
-      while (canLevelUp(newPlayer)) {
-        newPlayer = levelUp(newPlayer);
-        addBattleLogEntry({
-          message: `Level Up! Now level ${newPlayer.level}!`,
-          type: 'system',
-          timestamp: Date.now()
-        });
-      }
+      // Enforce EXP cap - don't exceed current level's expToNext
+      newPlayer.exp = Math.min(newPlayer.exp, newPlayer.expToNext);
+      // No auto level up - players must level up manually
 
       setGameState(prev => {
         // Restore full HP/MP after battle victory
@@ -212,15 +191,9 @@ export const useBattle = (
           let finalPlayer = gainExp(newPlayer, totalExp);
           finalPlayer.coin += totalCoins;
 
-          // Auto level up if possible
-          while (canLevelUp(finalPlayer)) {
-            finalPlayer = levelUp(finalPlayer);
-            addBattleLogEntry({
-              message: `Level Up! Now level ${finalPlayer.level}!`,
-              type: 'system',
-              timestamp: Date.now()
-            });
-          }
+          // Enforce EXP cap - don't exceed current level's expToNext
+          finalPlayer.exp = Math.min(finalPlayer.exp, finalPlayer.expToNext);
+          // No auto level up - players must level up manually
 
           // Restore full HP/MP after battle victory
           finalPlayer.hp = finalPlayer.maxHp;
