@@ -16,21 +16,15 @@ const Inventory: React.FC<InventoryProps> = ({
 }) => {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
-  // Get currently equipped equipment of the same type
-  const getEquippedEquipmentByType = (type: Equipment['type']): Equipment | undefined => {
-    return character.inventory.find(eq => eq.equipped && eq.type === type);
-  };
-
   // Check if item is equipped
   const isItemEquipped = (itemId: string): boolean => {
     const equipment = character.inventory.find(eq => eq.id === itemId);
     return equipment?.equipped || false;
   };
 
-  // Get equipment type from item
-  const getEquipmentType = (itemId: string): Equipment['type'] | null => {
-    const equipment = character.inventory.find(eq => eq.id === itemId);
-    return equipment?.type || null;
+  // Get currently equipped equipment of the same type
+  const getEquippedEquipmentByType = (type: Equipment['type']): Equipment | undefined => {
+    return character.inventory.find(eq => eq.equipped && eq.type === type);
   };
 
   // Calculate stat comparison
@@ -138,132 +132,237 @@ const Inventory: React.FC<InventoryProps> = ({
     return icons[type] || '📦';
   };
 
-  const equipmentSlots: Array<{ key: keyof Character['equippedItems']; name: string }> = [
+  const equipmentSlots: Array<{ key: string; name: string }> = [
     { key: 'weapon', name: '武器' },
     { key: 'armor', name: '护甲' },
     { key: 'helmet', name: '头盔' },
     { key: 'boots', name: '靴子' },
     { key: 'ring', name: '戒指' },
     { key: 'necklace', name: '项链' },
-    { key: 'accessory', name: '饰品' }
+    { key: 'accessory', name: '饰品' },
+    { key: 'accessory2', name: '饰品2' }
   ];
 
+  const formatItemDetails = (equipment: Equipment) => {
+    const lines: string[] = [];
+    
+    if (equipment.bonus?.pa) {
+      lines.push(`物攻 +${equipment.bonus.pa}`);
+    }
+    if (equipment.bonus?.ma) {
+      lines.push(`魔攻 +${equipment.bonus.ma}`);
+    }
+    if (equipment.bonus?.pd) {
+      lines.push(`物防 +${equipment.bonus.pd}`);
+    }
+    if (equipment.bonus?.md) {
+      lines.push(`魔防 +${equipment.bonus.md}`);
+    }
+    if (equipment.bonus?.maxHp) {
+      lines.push(`生命 +${equipment.bonus.maxHp}`);
+    }
+    if (equipment.bonus?.maxMp) {
+      lines.push(`法力 +${equipment.bonus.maxMp}`);
+    }
+    
+    if (equipment.elements) {
+      Object.entries(equipment.elements)
+        .filter(([_, value]) => value > 0)
+        .forEach(([element, value]) => {
+          lines.push(`${getElementName(element as any)} ${Math.floor(value)}`);
+        });
+    }
+    
+    return lines.join('<br>');
+  };
+
   return (
-    <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 shadow-lg border-2 border-amber-700">
-      <h3 className="text-xl font-bold text-center mb-4 text-red-900" style={{ fontFamily: 'serif' }}>📜 藏宝阁</h3>
+    <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-8 shadow-lg border-2 border-amber-700 max-w-7xl mx-auto">
+      <h3 className="text-2xl font-bold text-center mb-6 text-red-900" style={{ fontFamily: 'serif' }}>📜 藏宝阁</h3>
+      
+      {/* Equipped Items Section */}
+      <div className="bg-gradient-to-br from-amber-100 to-orange-100 rounded-lg p-6 border border-amber-600 mb-6">
+        <h4 className="text-xl font-bold text-red-900 mb-4" style={{ fontFamily: 'serif' }}>⚔️ 装备栏</h4>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {['weapon', 'armor', 'helmet', 'boots', 'ring', 'necklace', 'accessory', 'accessory2'].map(type => {
+            const equippedItem = getEquippedEquipmentByType(type as Equipment['type']);
+            return (
+              <div 
+                key={type}
+                className="p-4 border-2 rounded-lg transition-all relative"
+                style={{ 
+                  backgroundColor: equippedItem ? getRarityColor(equippedItem.rarity) + '20' : '#f3f4f6',
+                  borderColor: equippedItem ? getRarityColor(equippedItem.rarity) : '#9ca3af'
+                }}
+                onMouseEnter={() => equippedItem && setHoveredItem(equippedItem.id)}
+                onMouseLeave={() => setHoveredItem(null)}
+              >
+                <div className="text-center">
+                  <div className="text-2xl mb-2">
+                    {getEquipmentIcon(type as Equipment['type'])}
+                  </div>
+                  <div className="text-sm font-bold text-gray-700 mb-1">
+                    {getEquipmentTypeName(type as Equipment['type'])}
+                  </div>
+                  {equippedItem ? (
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="text-lg">
+                          {getEquipmentIcon(equippedItem.type)}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span 
+                              className="text-xs font-bold px-2 py-1 rounded text-white"
+                              style={{ backgroundColor: getRarityColor(equippedItem.rarity) }}
+                            >
+                              {getRarityName(equippedItem.rarity)}
+                            </span>
+                            <span className="text-sm text-gray-600">
+                              {getEquipmentTypeName(equippedItem.type)}
+                            </span>
+                          </div>
+                          <div className="text-lg font-bold text-red-900" style={{ fontFamily: 'serif' }}>
+                            {equippedItem.name}
+                          </div>
+                          <div className="text-xs text-amber-700">
+                            等级 {equippedItem.level}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Stats */}
+                      <div className="text-xs text-gray-700 mt-2">
+                        {equippedItem.bonus?.pa && <div>物攻 +{equippedItem.bonus.pa}</div>}
+                        {equippedItem.bonus?.ma && <div>魔攻 +{equippedItem.bonus.ma}</div>}
+                        {equippedItem.bonus?.pd && <div>物防 +{equippedItem.bonus.pd}</div>}
+                        {equippedItem.bonus?.md && <div>魔防 +{equippedItem.bonus.md}</div>}
+                        {equippedItem.bonus?.maxHp && <div>生命 +{equippedItem.bonus.maxHp}</div>}
+                        {equippedItem.bonus?.maxMp && <div>法力 +{equippedItem.bonus.maxMp}</div>}
+                      </div>
+                      
+                      {/* Elements */}
+                      {equippedItem.elements && Object.keys(equippedItem.elements).length > 0 && (
+                        <div className="text-xs text-purple-700 mt-1">
+                          {Object.entries(equippedItem.elements)
+                            .filter(([_, value]) => value > 0)
+                            .map(([element, value]) => `${getElementName(element as any)} ${Math.floor(value)}`)
+                            .join(', ')}
+                        </div>
+                      )}
+                      
+                      {/* Unequip Button */}
+                      <div className="mt-3">
+                        <button
+                          onClick={() => onUnequipItem(equippedItem.id)}
+                          className="px-3 py-2 bg-gradient-to-r from-red-600 to-orange-600 text-white text-xs font-bold rounded hover:from-red-700 hover:to-orange-700 transition-colors w-full"
+                        >
+                          🔓 卸下
+                        </button>
+                      </div>
+                      
+                      {/* Tooltip for equipped item details */}
+                      {hoveredItem === equippedItem.id && (
+                        <div 
+                          className="absolute z-50 w-80 p-4 bg-gray-900 text-white text-xs rounded-lg shadow-xl bottom-full left-1/2 transform -translate-x-1/2 mb-2"
+                          dangerouslySetInnerHTML={{ 
+                            __html: formatItemDetails(equippedItem)
+                          }}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-gray-500 text-sm">
+                      空
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
       
       {/* Inventory Items */}
-      <div className="bg-gradient-to-br from-amber-100 to-orange-100 rounded-lg p-4 border border-amber-600 mb-6">
-        <h4 className="text-lg font-bold text-red-900 mb-3" style={{ fontFamily: 'serif' }}>🎒 背包物品</h4>
+      <div className="bg-gradient-to-br from-amber-100 to-orange-100 rounded-lg p-6 border border-amber-600">
+        <h4 className="text-xl font-bold text-red-900 mb-4" style={{ fontFamily: 'serif' }}>🎒 背包物品</h4>
         {character.inventory && character.inventory.length > 0 ? (
-          <div className="space-y-3">
-            {character.inventory.map((equipment, index) => {
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            {character.inventory.filter(equipment => !equipment.equipped).map((equipment, index) => {
               if (!equipment) return null;
               
               const equipped = isItemEquipped(equipment.id);
-              const type = getEquipmentType(equipment.id);
               
               return (
                 <div 
                   key={index} 
-                  className="p-4 border-2 rounded-lg transition-all"
+                  className="p-3 border-2 rounded-lg transition-all hover:shadow-md cursor-pointer relative"
                   style={{ 
-                    backgroundColor: getRarityColor(equipment.rarity) + '20',
-                    borderColor: getRarityColor(equipment.rarity),
-                    opacity: equipped ? 0.6 : 1
+                    backgroundColor: equipped ? getRarityColor(equipment.rarity) + '20' : '#ffffff',
+                    borderColor: getRarityColor(equipment.rarity)
                   }}
+                  onMouseEnter={() => setHoveredItem(equipment.id)}
+                  onMouseLeave={() => setHoveredItem(null)}
                 >
-                  <div className="flex justify-between items-start gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="text-2xl">
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <div className="text-xl">
                         {getEquipmentIcon(equipment.type)}
                       </div>
                       <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span 
-                            className="text-sm font-bold px-2 py-1 rounded text-white"
-                            style={{ backgroundColor: getRarityColor(equipment.rarity) }}
-                          >
-                            {getRarityName(equipment.rarity)}
-                          </span>
-                          <span className="text-sm text-gray-600">
-                            {getEquipmentTypeName(equipment.type)}
-                          </span>
-                        </div>
-                        <div className="text-lg font-bold text-red-900" style={{ fontFamily: 'serif' }}>
-                          {equipment.name}
-                        </div>
-                        <div className="text-sm text-amber-700">
-                          等级 {equipment.level}
-                        </div>
-                        
-                        {/* Stats */}
-                        <div className="text-xs text-gray-700 mt-1">
-                          {equipment.bonus?.pa && <div>物攻 +{equipment.bonus.pa}</div>}
-                          {equipment.bonus?.ma && <div>魔攻 +{equipment.bonus.ma}</div>}
-                          {equipment.bonus?.pd && <div>物防 +{equipment.bonus.pd}</div>}
-                          {equipment.bonus?.md && <div>魔防 +{equipment.bonus.md}</div>}
-                          {equipment.bonus?.maxHp && <div>生命 +{equipment.bonus.maxHp}</div>}
-                          {equipment.bonus?.maxMp && <div>法力 +{equipment.bonus.maxMp}</div>}
-                        </div>
-                        
-                        {/* Elements */}
-                        {equipment.elements && Object.keys(equipment.elements).length > 0 && (
-                          <div className="text-xs text-purple-700 mt-1">
-                            {Object.entries(equipment.elements)
-                              .filter(([_, value]) => value > 0)
-                              .map(([element, value]) => `${getElementName(element as any)} ${Math.floor(value)}`)
-                              .join(', ')}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      {!equipped && type && (
-                        <div className="relative">
-                          <button
-                            onClick={() => onEquipItem(equipment.id)}
-                            onMouseEnter={() => setHoveredItem(equipment.id)}
-                            onMouseLeave={() => setHoveredItem(null)}
-                            className="px-3 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-bold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-colors border-2 border-blue-800"
-                          >
-                            🎯 装备
-                          </button>
-                          
-                          {/* Tooltip for stat comparison */}
-                          {hoveredItem === equipment.id && (
-                            <div 
-                              className="absolute z-10 w-64 p-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg bottom-full mb-2 left-0"
-                              dangerouslySetInnerHTML={{ 
-                                __html: formatStatComparison(
-                                  getStatComparison(equipment, getEquippedEquipmentByType(type!))
-                                )
-                              }}
-                            />
-                          )}
-                        </div>
-                      )}
-                      
-                      <div className="relative">
-                        <button
-                          onClick={() => onSellItem(equipment.id)}
-                          onMouseEnter={() => setHoveredItem(equipment.id + '_sell')}
-                          onMouseLeave={() => setHoveredItem(null)}
-                          className="px-3 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white text-sm font-bold rounded-lg hover:from-red-700 hover:to-red-800 transition-colors border-2 border-red-800"
-                          disabled={equipped}
+                        <div 
+                          className="text-xs font-bold px-2 py-1 rounded text-white"
+                          style={{ backgroundColor: getRarityColor(equipment.rarity) }}
                         >
-                          💰 出售
-                        </button>
-                        
-                          {/* Tooltip for sell price */}
-                          {hoveredItem === equipment.id + '_sell' && (
-                            <div className="absolute z-10 w-32 p-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg bottom-full mb-2 right-0">
-                              售价: {Math.floor(equipment.price / 2)} 🪙
-                            </div>
-                          )}
+                          {getRarityName(equipment.rarity)}
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          {getEquipmentTypeName(equipment.type)}
+                        </div>
                       </div>
                     </div>
+                    <div className="text-sm font-bold text-red-900" style={{ fontFamily: 'serif' }}>
+                      {equipment.name}
+                    </div>
+                    <div className="text-xs text-amber-700">
+                      等级 {equipment.level}
+                    </div>
+                  </div>
+                  
+                  {/* Tooltip for item details */}
+                  {hoveredItem === equipment.id && (
+                    <div 
+                      className="absolute z-10 w-80 p-4 bg-gray-900 text-white text-xs rounded-lg shadow-xl bottom-full mb-2 left-0"
+                      dangerouslySetInnerHTML={{ 
+                        __html: formatItemDetails(equipment)
+                      }}
+                    />
+                  )}
+                  
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 mt-3">
+                    {!equipped && (
+                      <button
+                        onClick={() => onEquipItem(equipment.id)}
+                        className="flex-1 px-3 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-bold rounded hover:from-blue-700 hover:to-purple-700 transition-colors"
+                      >
+                        🎯 装备
+                      </button>
+                    )}
+                    {equipped && (
+                      <button
+                        onClick={() => onUnequipItem(equipment.id)}
+                        className="flex-1 px-3 py-2 bg-gradient-to-r from-red-600 to-orange-600 text-white text-xs font-bold rounded hover:from-red-700 hover:to-orange-700 transition-colors"
+                      >
+                        � 卸下
+                      </button>
+                    )}
+                    <button
+                      onClick={() => onSellItem(equipment.id)}
+                      className="flex-1 px-3 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-xs font-bold rounded hover:from-green-700 hover:to-emerald-700 transition-colors"
+                    >
+                      💰 出售
+                    </button>
                   </div>
                 </div>
               );
@@ -272,64 +371,6 @@ const Inventory: React.FC<InventoryProps> = ({
         ) : (
           <p className="text-center text-amber-700 font-semibold text-lg">藏宝阁空空如也</p>
         )}
-      </div>
-      
-      {/* Equipped Items Section */}
-      <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-lg p-4 border-2 border-red-600">
-        <h4 className="text-lg font-bold text-red-900 mb-3" style={{ fontFamily: 'serif' }}>🎯 当前装备</h4>
-        <div className="grid grid-cols-2 gap-3">
-          {equipmentSlots.map(slot => {
-            const equippedItem = character.inventory.find(eq => eq.equipped && eq.type === slot.key);
-            
-            return (
-              <div 
-                key={slot.key}
-                className="p-3 border-2 rounded-lg"
-                style={{ borderColor: '#dc2626' }}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-amber-800 font-semibold">{slot.name}:</span>
-                  {equippedItem && (
-                    <button
-                      onClick={() => equippedItem && onUnequipItem(equippedItem.id)}
-                      className="px-2 py-1 bg-gradient-to-r from-orange-600 to-red-600 text-white text-xs font-bold rounded hover:from-orange-700 hover:to-red-700 transition-colors"
-                    >
-                      脱下
-                    </button>
-                  )}
-                </div>
-                
-                <div className="text-red-900">
-                  {equippedItem ? (
-                    <div className="flex items-center gap-2">
-                      <div className="text-lg">
-                        {getEquipmentIcon(equippedItem.type)}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span 
-                            className="text-xs font-bold px-1 py-0.5 rounded text-white"
-                            style={{ backgroundColor: getRarityColor(equippedItem.rarity) }}
-                          >
-                            {getRarityName(equippedItem.rarity)}
-                          </span>
-                        </div>
-                        <div className="text-sm font-bold" style={{ fontFamily: 'serif' }}>
-                          {equippedItem.name}
-                        </div>
-                        <div className="text-xs text-gray-600">
-                          等级 {equippedItem.level}
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <span className="text-gray-500 text-sm">未装备</span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
       </div>
     </div>
   );
