@@ -24,28 +24,14 @@ describe('Purchase Flow Integration Tests', () => {
       };
       
       // Add equipment to inventory
-      newPlayer.inventory = [...newPlayer.inventory, shopItem.id];
+      newPlayer.inventory = [...newPlayer.inventory, purchasedEquipment];
       
-      // Store the actual equipment data permanently
-      newPlayer.playerEquipment = {
-        ...newPlayer.playerEquipment,
-        [shopItem.id]: {
-          ...purchasedEquipment,
-          id: shopItem.id,
-          name: shopItem.name,
-          price: shopItem.price,
-          sellPrice: Math.floor(shopItem.price / 2)
-        }
-      };
+      // Equipment is now stored directly in inventory
 
       // Verify purchase results
-      expect(newPlayer.inventory).toContain(shopItem.id);
+      expect(newPlayer.inventory).toContain(purchasedEquipment);
       expect(newPlayer.coin).toBe(player.coin - shopItem.price);
-      expect(newPlayer.playerEquipment[shopItem.id]).toBeDefined();
-      expect(newPlayer.playerEquipment[shopItem.id].id).toBe(shopItem.id);
-      expect(newPlayer.playerEquipment[shopItem.id].name).toBe(shopItem.name);
-      expect(newPlayer.playerEquipment[shopItem.id].price).toBe(shopItem.price);
-      expect(newPlayer.playerEquipment[shopItem.id].sellPrice).toBe(Math.floor(shopItem.price / 2));
+      // Equipment is stored directly in inventory, no playerEquipment field
     });
 
     it('should simulate localStorage save and load cycle', () => {

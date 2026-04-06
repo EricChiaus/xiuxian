@@ -10,42 +10,6 @@ const loadGame = () => {
     
     if (saved) {
       const parsed = JSON.parse(saved);
-      
-      // Fix: Use nested playerEquipment if root is empty
-      if (!parsed.playerEquipment || Object.keys(parsed.playerEquipment).length === 0) {
-        if (parsed.player?.playerEquipment && Object.keys(parsed.player.playerEquipment).length > 0) {
-          parsed.playerEquipment = parsed.player.playerEquipment;
-        }
-      }
-      
-      // Fix: Ensure all equipped items are in inventory and have equipment data
-      if (parsed.player?.equippedItems) {
-        const equippedItemIds = Object.values(parsed.player.equippedItems).filter((id): id is string => Boolean(id));
-        
-        equippedItemIds.forEach(itemId => {
-          // Add to inventory if not present
-          if (!parsed.player.inventory.includes(itemId)) {
-            parsed.player.inventory.push(itemId);
-          }
-          
-          // Add equipment data if missing
-          if (!parsed.playerEquipment[itemId]) {
-            parsed.playerEquipment[itemId] = {
-              id: itemId,
-              name: 'Equipped Item',
-              type: 'weapon',
-              rarity: 'common',
-              level: 1,
-              bonus: {},
-              elements: {},
-              elementResistance: {},
-              price: 100,
-              sellPrice: 50
-            };
-          }
-        });
-      }
-      
       return parsed;
     }
     return null;
