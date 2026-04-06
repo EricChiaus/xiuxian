@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 import { GameState, Equipment, ShopItem, Elements, ElementResistance } from '../types/game';
 import { generateShopItems } from '../utils/shop';
-import { generateEquipment } from '../utils/equipment';
 import { calculateStats } from '../utils/character';
 
 export const useShopInventory = (

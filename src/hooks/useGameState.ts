@@ -2,52 +2,11 @@ import { useState, useCallback } from 'react';
 import { GameState } from '../types/game';
 import { createInitialCharacter } from '../utils/character';
 import { generateShopItems } from '../utils/shop';
-
-// Save/Load functions
-const loadGame = () => {
-  try {
-    const saved = localStorage.getItem('xiuxian-save');
-    
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      return parsed;
-    }
-    return null;
-  } catch (error) {
-    return null;
-  }
-};
-
-const saveGame = (state: GameState) => {
-  try {
-    // Don't save during battle - only save after battle completion
-    if (state.inBattle) {
-      console.log('Skipping save during battle');
-      return;
-    }
-    
-    // Create a clean save state without battle-related data
-    const saveState = {
-      player: state.player,
-      lastSaveTime: Date.now()
-    };
-    localStorage.setItem('xiuxian-save', JSON.stringify(saveState));
-  } catch {
-    // Silent fail
-  }
-};
-
-const clearSavedGame = () => {
-  try {
-    localStorage.removeItem('xiuxian-save');
-  } catch {
-    // Silent fail
-  }
-};
+import { clearGameSave, loadGameSave, saveGameState } from '../utils/persistence';
 
 export const useGameState = () => {
   const [gameState, setGameState] = useState<GameState>(() => {
-    const savedData = loadGame();
+    const savedData = loadGameSave();
     if (savedData) {
       return {
         player: savedData.player,
@@ -80,7 +39,7 @@ export const useGameState = () => {
   });
 
   const resetGame = useCallback(() => {
-    clearSavedGame();
+    clearGameSave();
     setGameState({
       player: createInitialCharacter(),
       currentEnemy: null,
@@ -98,6 +57,10 @@ export const useGameState = () => {
       battleResult: null,
       battleRewards: null
     });
+  }, []);
+
+  const saveGame = useCallback((state: GameState) => {
+    saveGameState(state);
   }, []);
 
   return {

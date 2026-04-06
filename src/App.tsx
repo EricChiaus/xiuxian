@@ -1,15 +1,15 @@
 import { useState } from 'react';
-import { useGame } from './hooks/useGame';
 import CharacterPanel from './components/CharacterPanel';
 import BattleArea from './components/BattleArea';
 import BattleModal from './components/BattleModal';
 import Shop from './components/Shop';
 import Inventory from './components/Inventory';
 import Profile from './components/Profile';
-import { getCultivatorLevelName } from './types/game';
+import { GameState, getCultivatorLevelName } from './types/game';
+import { GameProvider, useGameContext } from './context/GameContext';
 
-function App() {
-  const { gameState, setGameState, startBattle, performAction, manualLevelUp, resetGame, buyItem, sellItem, equipItem, unequipItem, refreshShop, selectEnemy, getAvailableShopItems, closeBattleModal } = useGame();
+function AppContent() {
+  const { gameState, setGameState, startBattle, performAction, manualLevelUp, resetGame, buyItem, sellItem, equipItem, unequipItem, refreshShop, selectEnemy, getAvailableShopItems, closeBattleModal } = useGameContext();
   const [showShop, setShowShop] = useState(false);
   const [showInventory, setShowInventory] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
@@ -153,7 +153,7 @@ function App() {
             currentAvatar={gameState.player.avatar}
             onAvatarChange={(avatarId) => {
               // Update avatar in game state
-              setGameState((prev: any) => ({
+              setGameState((prev: GameState) => ({
                 ...prev,
                 player: {
                   ...prev.player,
@@ -176,6 +176,14 @@ function App() {
         </div>
       </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <GameProvider>
+      <AppContent />
+    </GameProvider>
   );
 }
 

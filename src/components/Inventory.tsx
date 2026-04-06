@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Character, Equipment, getRarityName, getRarityColor, getEquipmentTypeName, getElementName } from '../types/game';
+import { getComparisonRows, getItemDetailLines } from '../utils/inventoryDisplay';
 
 interface InventoryProps {
   character: Character;
@@ -8,12 +9,7 @@ interface InventoryProps {
   onSellItem: (itemId: string) => void;
 }
 
-const Inventory: React.FC<InventoryProps> = ({ 
-  character, 
-  onEquipItem, 
-  onUnequipItem, 
-  onSellItem 
-}) => {
+const Inventory: React.FC<InventoryProps> = ({ character, onEquipItem, onUnequipItem, onSellItem }) => {
   const [hoveredItem, setHoveredItem] = useState<{ id: string; type: 'item' | 'equip' | 'sell' } | null>(null);
 
   // Check if item is equipped
@@ -32,97 +28,6 @@ const Inventory: React.FC<InventoryProps> = ({
     return character.inventory.find(eq => eq.equipped && eq.type === type);
   };
 
-  // Calculate stat comparison
-  const getStatComparison = (item: Equipment, equippedItem?: Equipment) => {
-    const comparison: { [key: string]: { current: number; new: number } } = {};
-    
-    // Compare stats
-    if (item.bonus?.pa) {
-      comparison.pa = {
-        current: equippedItem?.bonus?.pa || 0,
-        new: item.bonus.pa
-      };
-    }
-    if (item.bonus?.ma) {
-      comparison.ma = {
-        current: equippedItem?.bonus?.ma || 0,
-        new: item.bonus.ma
-      };
-    }
-    if (item.bonus?.pd) {
-      comparison.pd = {
-        current: equippedItem?.bonus?.pd || 0,
-        new: item.bonus.pd
-      };
-    }
-    if (item.bonus?.md) {
-      comparison.md = {
-        current: equippedItem?.bonus?.md || 0,
-        new: item.bonus.md
-      };
-    }
-    if (item.bonus?.maxHp) {
-      comparison.maxHp = {
-        current: equippedItem?.bonus?.maxHp || 0,
-        new: item.bonus.maxHp
-      };
-    }
-    if (item.bonus?.maxMp) {
-      comparison.maxMp = {
-        current: equippedItem?.bonus?.maxMp || 0,
-        new: item.bonus.maxMp
-      };
-    }
-    
-    // Compare elements
-    if (item.elements) {
-      Object.entries(item.elements).forEach(([element, value]) => {
-        if (value > 0) {
-          const currentElementValue = equippedItem?.elements?.[element as keyof typeof item.elements] || 0;
-          comparison[element] = {
-            current: currentElementValue,
-            new: value
-          };
-        }
-      });
-    }
-    
-    return comparison;
-  };
-
-  // Format stat comparison for tooltip
-  const formatStatComparison = (comparison: ReturnType<typeof getStatComparison>) => {
-    const lines: string[] = [];
-    
-    const statNames: { [key: string]: string } = {
-      pa: '物攻',
-      ma: '魔攻',
-      pd: '物防',
-      md: '魔防',
-      maxHp: '生命',
-      maxMp: '法力',
-      metal: '金',
-      wood: '木',
-      water: '水',
-      fire: '火',
-      earth: '土',
-      yin: '阴',
-      yang: '阳'
-    };
-    
-    Object.entries(comparison).forEach(([stat, values]) => {
-      const diff = values.new - values.current;
-      const arrow = diff > 0 ? '↑' : diff < 0 ? '↓' : '=';
-      const color = diff > 0 ? 'text-green-600' : diff < 0 ? 'text-red-600' : 'text-gray-600';
-      
-      lines.push(
-        `<span class="${color}">${statNames[stat]}: ${values.current} → ${values.new} ${arrow}</span>`
-      );
-    });
-    
-    return lines.join('<br>');
-  };
-
   // Get equipment icon based on type
   const getEquipmentIcon = (type: Equipment['type']) => {
     const icons = {
@@ -135,50 +40,6 @@ const Inventory: React.FC<InventoryProps> = ({
       accessory: '🧿'
     };
     return icons[type] || '📦';
-  };
-
-  const equipmentSlots: Array<{ key: string; name: string }> = [
-    { key: 'weapon', name: '武器' },
-    { key: 'armor', name: '护甲' },
-    { key: 'helmet', name: '头盔' },
-    { key: 'boots', name: '靴子' },
-    { key: 'ring', name: '戒指' },
-    { key: 'necklace', name: '项链' },
-    { key: 'accessory', name: '饰品' },
-    { key: 'accessory2', name: '饰品2' }
-  ];
-
-  const formatItemDetails = (equipment: Equipment) => {
-    const lines: string[] = [];
-    
-    if (equipment.bonus?.pa) {
-      lines.push(`物攻 +${equipment.bonus.pa}`);
-    }
-    if (equipment.bonus?.ma) {
-      lines.push(`魔攻 +${equipment.bonus.ma}`);
-    }
-    if (equipment.bonus?.pd) {
-      lines.push(`物防 +${equipment.bonus.pd}`);
-    }
-    if (equipment.bonus?.md) {
-      lines.push(`魔防 +${equipment.bonus.md}`);
-    }
-    if (equipment.bonus?.maxHp) {
-      lines.push(`生命 +${equipment.bonus.maxHp}`);
-    }
-    if (equipment.bonus?.maxMp) {
-      lines.push(`法力 +${equipment.bonus.maxMp}`);
-    }
-    
-    if (equipment.elements) {
-      Object.entries(equipment.elements)
-        .filter(([_, value]) => value > 0)
-        .forEach(([element, value]) => {
-          lines.push(`${getElementName(element as any)} ${Math.floor(value)}`);
-        });
-    }
-    
-    return lines.join('<br>');
   };
 
   return (
@@ -324,14 +185,13 @@ const Inventory: React.FC<InventoryProps> = ({
                     </div>
                   </div>
                   
-                  {/* Detail tooltip — only shown when hovering item area (not buttons) */}
+                  {/* Detail tooltip */}
                   {hoveredItem?.id === equipment.id && hoveredItem.type === 'item' && (
-                    <div 
-                      className="absolute z-10 w-80 p-4 bg-gradient-to-br from-amber-900 to-orange-800 text-white text-xs rounded-lg shadow-xl bottom-full mb-2 left-0 border border-amber-600"
-                      dangerouslySetInnerHTML={{ 
-                        __html: formatItemDetails(equipment)
-                      }}
-                    />
+                    <div className="absolute z-10 w-80 p-4 bg-gradient-to-br from-amber-900 to-orange-800 text-white text-xs rounded-lg shadow-xl bottom-full mb-2 left-0 border border-amber-600 space-y-1">
+                      {getItemDetailLines(equipment).map((line, detailIdx) => (
+                        <div key={`${equipment.id}-detail-${detailIdx}`}>{line}</div>
+                      ))}
+                    </div>
                   )}
                   
                   {/* Action Buttons */}
@@ -353,16 +213,19 @@ const Inventory: React.FC<InventoryProps> = ({
                           🎯 装备
                         </button>
                         
-                        {/* Comparison tooltip — only shown when hovering equip button */}
+                        {/* Comparison tooltip */}
                         {hoveredItem?.id === equipment.id && hoveredItem.type === 'equip' && (
-                          <div 
-                            className="absolute z-50 w-80 p-4 bg-gray-900 text-white text-xs rounded-lg shadow-xl bottom-full left-1/2 transform -translate-x-1/2 mb-2"
-                            dangerouslySetInnerHTML={{ 
-                              __html: formatStatComparison(
-                                getStatComparison(equipment, getEquippedEquipmentByType(equipment.type))
-                              )
-                            }}
-                          />
+                          <div className="absolute z-50 w-80 p-4 bg-gray-900 text-white text-xs rounded-lg shadow-xl bottom-full left-1/2 transform -translate-x-1/2 mb-2 space-y-1">
+                            {getComparisonRows(equipment, getEquippedEquipmentByType(equipment.type)).map((row, rowIdx) => {
+                              const color = row.diff > 0 ? 'text-green-400' : row.diff < 0 ? 'text-red-400' : 'text-gray-300';
+                              const arrow = row.diff > 0 ? '↑' : row.diff < 0 ? '↓' : '=';
+                              return (
+                                <div key={`${equipment.id}-cmp-${rowIdx}`} className={color}>
+                                  {row.label}: {row.current} → {row.next} {arrow}
+                                </div>
+                              );
+                            })}
+                          </div>
                         )}
                       </div>
                     )}
