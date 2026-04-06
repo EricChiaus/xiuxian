@@ -77,7 +77,7 @@ export const useShopInventory = (
       const newPlayer = { ...prev.player, coin: prev.player.coin - shopItem.price };
       
       // Generate equipment and add to inventory
-      const purchasedEquipment = generateEquipment(shopItem.id, 'weapon', newPlayer.level);
+      const purchasedEquipment = shopItem;
       newPlayer.inventory = [...newPlayer.inventory, purchasedEquipment];
 
       const newState = {

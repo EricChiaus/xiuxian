@@ -61,7 +61,7 @@ export const useGame = () => {
     }));
   }, [gameState.player, addBattleLogEntry, setGameState]);
 
-  // Auto EXP growth every 10 seconds (not during battle)
+  // Auto EXP growth every 60 seconds (not during battle)
   useEffect(() => {
     if (gameState.inBattle) return;
 
@@ -86,7 +86,7 @@ export const useGame = () => {
         saveGame(newState);
         return newState;
       });
-    }, 10000); // Every 10 seconds
+    }, 60000); // Every 60 seconds
 
     return () => clearInterval(expInterval);
   }, [gameState.inBattle, setGameState, saveGame]);

@@ -83,7 +83,7 @@ export interface GameState {
   isPlayerTurn: boolean; // Track whose turn it is
   battleLog: BattleLogEntry[];
   lastSaveTime: number;
-  shopItems: ShopItem[];
+  shopItems: Equipment[];
 }
 
 export interface BattleLogEntry {

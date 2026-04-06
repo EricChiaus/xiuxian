@@ -69,7 +69,7 @@ describe('BuyItem Integration Tests', () => {
     expect(equipment.id).toBe(shopItem.id);
     // Equipment name is generated randomly, so we just check it exists
     expect(equipment.name).toBeDefined();
-    expect(equipment.type).toBe('weapon'); // We default to weapon type
+    expect(equipment.type).toBeDefined(); // Equipment can be any type now
     expect(equipment.price).toBeGreaterThan(0);
     expect(equipment.sellPrice).toBe(Math.floor(equipment.price / 2));
   });
@@ -87,9 +87,9 @@ describe('BuyItem Integration Tests', () => {
         inventory: [{
           id: shopItem.id,
           name: shopItem.name,
-          type: 'weapon',
-          rarity: 'common',
-          level: 1,
+          type: shopItem.type,
+          rarity: shopItem.rarity,
+          level: shopItem.level,
           bonus: { pa: 10 },
           elements: { fire: 5 },
           price: shopItem.price,
@@ -127,9 +127,9 @@ describe('BuyItem Integration Tests', () => {
     expect(inventoryEquipment).toHaveLength(1);
     expect(inventoryEquipment[0].id).toBe(shopItem.id);
     expect(inventoryEquipment[0].name).toBe(shopItem.name);
-    expect(allEquipment[0].type).toBe('weapon');
-    expect(allEquipment[0].rarity).toBe('common');
-    expect(allEquipment[0].level).toBe(1);
+    expect(allEquipment[0].type).toBe(shopItem.type);
+    expect(allEquipment[0].rarity).toBe(shopItem.rarity);
+    expect(allEquipment[0].level).toBe(shopItem.level);
     expect(allEquipment[0].bonus.pa).toBe(10);
     expect(allEquipment[0].elements.fire).toBe(5);
     expect(allEquipment[0].sellPrice).toBe(Math.floor(shopItem.price / 2));
@@ -145,12 +145,11 @@ describe('BuyItem Integration Tests', () => {
     const purchasedEquipment = {
       id: shopItem.id,
       name: shopItem.name,
-      type: 'weapon' as const,
-      rarity: 'common' as const,
-      level: 1,
+      type: shopItem.type,
+      rarity: shopItem.rarity,
+      level: shopItem.level,
       bonus: { pa: 10 },
       elements: { fire: 5 },
-      elementResistance: {},
       price: shopItem.price,
       sellPrice: Math.floor(shopItem.price / 2)
     };
@@ -191,8 +190,8 @@ describe('BuyItem Integration Tests', () => {
     expect(loadedEquipment.id).toBe(purchasedEquipment.id);
     expect(loadedEquipment.name).toBe(purchasedEquipment.name);
     expect(loadedEquipment.type).toBe(purchasedEquipment.type);
-    expect(loadedEquipment.rarity).toBe('common');
-    expect(loadedEquipment.level).toBe(1);
+    expect(loadedEquipment.rarity).toBe(purchasedEquipment.rarity);
+    expect(loadedEquipment.level).toBe(purchasedEquipment.level);
     expect(loadedEquipment.bonus.pa).toBe(10);
     expect(loadedEquipment.elements.fire).toBe(5);
   });

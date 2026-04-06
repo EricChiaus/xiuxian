@@ -38,53 +38,55 @@ const Inventory: React.FC<InventoryProps> = ({
     const comparison: { [key: string]: { current: number; new: number } } = {};
     
     // Compare stats
-    if (item.bonus.pa) {
+    if (item.bonus?.pa) {
       comparison.pa = {
-        current: equippedItem?.bonus.pa || 0,
+        current: equippedItem?.bonus?.pa || 0,
         new: item.bonus.pa
       };
     }
-    if (item.bonus.ma) {
+    if (item.bonus?.ma) {
       comparison.ma = {
-        current: equippedItem?.bonus.ma || 0,
+        current: equippedItem?.bonus?.ma || 0,
         new: item.bonus.ma
       };
     }
-    if (item.bonus.pd) {
+    if (item.bonus?.pd) {
       comparison.pd = {
-        current: equippedItem?.bonus.pd || 0,
+        current: equippedItem?.bonus?.pd || 0,
         new: item.bonus.pd
       };
     }
-    if (item.bonus.md) {
+    if (item.bonus?.md) {
       comparison.md = {
-        current: equippedItem?.bonus.md || 0,
+        current: equippedItem?.bonus?.md || 0,
         new: item.bonus.md
       };
     }
-    if (item.bonus.maxHp) {
+    if (item.bonus?.maxHp) {
       comparison.maxHp = {
-        current: equippedItem?.bonus.maxHp || 0,
+        current: equippedItem?.bonus?.maxHp || 0,
         new: item.bonus.maxHp
       };
     }
-    if (item.bonus.maxMp) {
+    if (item.bonus?.maxMp) {
       comparison.maxMp = {
-        current: equippedItem?.bonus.maxMp || 0,
+        current: equippedItem?.bonus?.maxMp || 0,
         new: item.bonus.maxMp
       };
     }
     
     // Compare elements
-    Object.entries(item.elements).forEach(([element, value]) => {
-      if (value > 0) {
-        const currentElementValue = equippedItem?.elements[element as keyof typeof item.elements] || 0;
-        comparison[element] = {
-          current: currentElementValue,
-          new: value
-        };
-      }
-    });
+    if (item.elements) {
+      Object.entries(item.elements).forEach(([element, value]) => {
+        if (value > 0) {
+          const currentElementValue = equippedItem?.elements?.[element as keyof typeof item.elements] || 0;
+          comparison[element] = {
+            current: currentElementValue,
+            new: value
+          };
+        }
+      });
+    }
     
     return comparison;
   };
@@ -197,16 +199,16 @@ const Inventory: React.FC<InventoryProps> = ({
                         
                         {/* Stats */}
                         <div className="text-xs text-gray-700 mt-1">
-                          {equipment.bonus.pa && <div>物攻 +{equipment.bonus.pa}</div>}
-                          {equipment.bonus.ma && <div>魔攻 +{equipment.bonus.ma}</div>}
-                          {equipment.bonus.pd && <div>物防 +{equipment.bonus.pd}</div>}
-                          {equipment.bonus.md && <div>魔防 +{equipment.bonus.md}</div>}
-                          {equipment.bonus.maxHp && <div>生命 +{equipment.bonus.maxHp}</div>}
-                          {equipment.bonus.maxMp && <div>法力 +{equipment.bonus.maxMp}</div>}
+                          {equipment.bonus?.pa && <div>物攻 +{equipment.bonus.pa}</div>}
+                          {equipment.bonus?.ma && <div>魔攻 +{equipment.bonus.ma}</div>}
+                          {equipment.bonus?.pd && <div>物防 +{equipment.bonus.pd}</div>}
+                          {equipment.bonus?.md && <div>魔防 +{equipment.bonus.md}</div>}
+                          {equipment.bonus?.maxHp && <div>生命 +{equipment.bonus.maxHp}</div>}
+                          {equipment.bonus?.maxMp && <div>法力 +{equipment.bonus.maxMp}</div>}
                         </div>
                         
                         {/* Elements */}
-                        {Object.keys(equipment.elements).length > 0 && (
+                        {equipment.elements && Object.keys(equipment.elements).length > 0 && (
                           <div className="text-xs text-purple-700 mt-1">
                             {Object.entries(equipment.elements)
                               .filter(([_, value]) => value > 0)
