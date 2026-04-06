@@ -14,7 +14,7 @@ const Inventory: React.FC<InventoryProps> = ({
   onUnequipItem, 
   onSellItem 
 }) => {
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [hoveredItem, setHoveredItem] = useState<{ id: string; type: 'item' | 'equip' | 'sell' } | null>(null);
 
   // Check if item is equipped
   const isItemEquipped = (itemId: string): boolean => {
@@ -194,7 +194,7 @@ const Inventory: React.FC<InventoryProps> = ({
                   backgroundColor: equippedItem ? getRarityColor(equippedItem.rarity) + '20' : '#f3f4f6',
                   borderColor: equippedItem ? getRarityColor(equippedItem.rarity) : '#9ca3af'
                 }}
-                onMouseEnter={() => equippedItem && setHoveredItem(equippedItem.id)}
+                onMouseEnter={() => equippedItem && setHoveredItem({ id: equippedItem.id, type: 'item' })}
                 onMouseLeave={() => setHoveredItem(null)}
               >
                 <div className="text-center">
@@ -291,6 +291,8 @@ const Inventory: React.FC<InventoryProps> = ({
                     backgroundColor: equipped ? getRarityColor(equipment.rarity) + '20' : '#ffffff',
                     borderColor: getRarityColor(equipment.rarity)
                   }}
+                  onMouseEnter={() => setHoveredItem({ id: equipment.id, type: 'item' })}
+                  onMouseLeave={() => setHoveredItem(null)}
                 >
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-2 mb-2">
@@ -317,8 +319,8 @@ const Inventory: React.FC<InventoryProps> = ({
                     </div>
                   </div>
                   
-                  {/* Tooltip for item details */}
-                  {hoveredItem === equipment.id && (
+                  {/* Detail tooltip — only shown when hovering item area (not buttons) */}
+                  {hoveredItem?.id === equipment.id && hoveredItem.type === 'item' && (
                     <div 
                       className="absolute z-10 w-80 p-4 bg-gradient-to-br from-amber-900 to-orange-800 text-white text-xs rounded-lg shadow-xl bottom-full mb-2 left-0 border border-amber-600"
                       dangerouslySetInnerHTML={{ 
@@ -335,19 +337,19 @@ const Inventory: React.FC<InventoryProps> = ({
                           onClick={() => onEquipItem(equipment.id)}
                           onMouseEnter={(e) => {
                             e.stopPropagation();
-                            setHoveredItem(equipment.id);
+                            setHoveredItem({ id: equipment.id, type: 'equip' });
                           }}
                           onMouseLeave={(e) => {
                             e.stopPropagation();
-                            setHoveredItem(null);
+                            setHoveredItem({ id: equipment.id, type: 'item' });
                           }}
                           className="flex-1 px-3 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-bold rounded hover:from-blue-700 hover:to-purple-700 transition-colors"
                         >
                           🎯 装备
                         </button>
                         
-                        {/* Comparison Tooltip */}
-                        {hoveredItem === equipment.id && (
+                        {/* Comparison tooltip — only shown when hovering equip button */}
+                        {hoveredItem?.id === equipment.id && hoveredItem.type === 'equip' && (
                           <div 
                             className="absolute z-50 w-80 p-4 bg-gray-900 text-white text-xs rounded-lg shadow-xl bottom-full left-1/2 transform -translate-x-1/2 mb-2"
                             dangerouslySetInnerHTML={{ 
@@ -364,15 +366,32 @@ const Inventory: React.FC<InventoryProps> = ({
                         onClick={() => onUnequipItem(equipment.id)}
                         className="flex-1 px-3 py-2 bg-gradient-to-r from-red-600 to-orange-600 text-white text-xs font-bold rounded hover:from-red-700 hover:to-orange-700 transition-colors"
                       >
-                        � 卸下
+                        🔓 卸下
                       </button>
                     )}
-                    <button
-                      onClick={() => onSellItem(equipment.id)}
-                      className="flex-1 px-3 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-xs font-bold rounded hover:from-green-700 hover:to-emerald-700 transition-colors"
-                    >
-                      💰 出售
-                    </button>
+                    <div className="relative flex-1">
+                      <button
+                        onClick={() => onSellItem(equipment.id)}
+                        onMouseEnter={(e) => {
+                          e.stopPropagation();
+                          setHoveredItem({ id: equipment.id, type: 'sell' });
+                        }}
+                        onMouseLeave={(e) => {
+                          e.stopPropagation();
+                          setHoveredItem({ id: equipment.id, type: 'item' });
+                        }}
+                        className="w-full px-3 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-xs font-bold rounded hover:from-green-700 hover:to-emerald-700 transition-colors"
+                      >
+                        💰 出售
+                      </button>
+
+                      {/* Sell price tooltip — only shown when hovering sell button */}
+                      {hoveredItem?.id === equipment.id && hoveredItem.type === 'sell' && (
+                        <div className="absolute z-50 w-40 p-2 bg-gray-900 text-white text-xs rounded-lg shadow-xl bottom-full left-1/2 transform -translate-x-1/2 mb-2 text-center">
+                          出售价格: <span className="text-yellow-300 font-bold">{equipment.sellPrice} 灵石</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
