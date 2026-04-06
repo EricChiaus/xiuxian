@@ -277,6 +277,9 @@ export const getAllElementDamage = (attackerElements: Partial<Elements> | null |
       }
     }
 
+    // Ensure minimum 1 damage for each element
+    damage = Math.max(1, damage);
+
     elementDamages.push({
       element: elementType,
       damage,

@@ -22,7 +22,7 @@ export const performPlayerAction = (
       const elementDamageResult = getAllElementDamage(character.elements, enemy.elementResistance, enemy.elements);
       const totalElementDamage = elementDamageResult.totalDamage;
       
-      const totalDamage = baseDamage + totalElementDamage;
+      const totalDamage = Math.max(1, baseDamage + totalElementDamage);
       newEnemy.hp = Math.max(0, newEnemy.hp - totalDamage);
       
       // Build detailed damage message
@@ -67,7 +67,7 @@ export const performPlayerAction = (
         powerMagicBonus = Math.floor(powerMagicBonus * powerMultiplier * (1 - resistanceReduction));
       }
       
-      const totalMagicDamage = baseMagicDamage + powerMagicBonus;
+      const totalMagicDamage = Math.max(1, baseMagicDamage + powerMagicBonus);
       newEnemy.hp = Math.max(0, newEnemy.hp - totalMagicDamage);
       newCharacter = useMp(newCharacter, 10);
       
@@ -140,7 +140,7 @@ export const performEnemyAction = (
       const elementDamageResult = getAllElementDamage(enemy.elements, character.elementResistance, character.elements);
       const totalElementDamage = elementDamageResult.totalDamage;
       
-      const totalDamage = baseDamage + totalElementDamage;
+      const totalDamage = Math.max(1, baseDamage + totalElementDamage);
       newCharacter.hp = Math.max(0, newCharacter.hp - totalDamage);
       
       // Build detailed damage message
@@ -180,7 +180,7 @@ export const performEnemyAction = (
           powerMagicBonus = Math.floor(powerMagicBonus * powerMultiplier * (1 - resistanceReduction));
         }
         
-        const totalMagicDamage = baseMagicDamage + powerMagicBonus;
+        const totalMagicDamage = Math.max(1, baseMagicDamage + powerMagicBonus);
         newCharacter.hp = Math.max(0, newCharacter.hp - totalMagicDamage);
         
         if (powerMagicBonus > 0) {
