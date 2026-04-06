@@ -110,6 +110,10 @@ export const useBattle = (
       }
 
       setGameState(prev => {
+        // Restore full HP/MP after battle victory
+        newPlayer.hp = newPlayer.maxHp;
+        newPlayer.mp = newPlayer.maxMp;
+        
         const battleEndState = {
           ...prev,
           player: newPlayer,
@@ -119,7 +123,7 @@ export const useBattle = (
           inBattle: false,
           isPlayerTurn: true,
           battleLog: [...prev.battleLog, {
-            message: `Victory! You gained ${totalExp} EXP and ${totalCoins} coins!`,
+            message: `Victory! You gained ${totalExp} EXP and ${totalCoins} coins! HP/MP fully restored!`,
             type: 'system' as const,
             timestamp: Date.now()
           }]
@@ -138,9 +142,9 @@ export const useBattle = (
       const expLoss = Math.floor(gameState.player.exp * 0.1);
       let newPlayer = gainExp(playerResult.character, -expLoss);
       
-      // Restore some HP/MP for next battle
-      newPlayer.hp = Math.floor(newPlayer.maxHp * 0.5);
-      newPlayer.mp = Math.floor(newPlayer.maxMp * 0.5);
+      // Restore full HP/MP after battle defeat (same as victory)
+      newPlayer.hp = newPlayer.maxHp;
+      newPlayer.mp = newPlayer.maxMp;
 
       setGameState(prev => {
         const battleEndState = {
@@ -152,7 +156,7 @@ export const useBattle = (
           inBattle: false,
           isPlayerTurn: true,
           battleLog: [...prev.battleLog, {
-            message: `Defeat! You lost ${expLoss} EXP!`,
+            message: `Defeat! You lost ${expLoss} EXP! HP/MP fully restored!`,
             type: 'system' as const,
             timestamp: Date.now()
           }]
@@ -218,6 +222,10 @@ export const useBattle = (
             });
           }
 
+          // Restore full HP/MP after battle victory
+          finalPlayer.hp = finalPlayer.maxHp;
+          finalPlayer.mp = finalPlayer.maxMp;
+
           const battleEndState = {
             ...prev,
             player: finalPlayer,
@@ -227,7 +235,7 @@ export const useBattle = (
             inBattle: false,
             isPlayerTurn: true,
             battleLog: [...prev.battleLog, {
-              message: `Victory! You gained ${totalExp} EXP and ${totalCoins} coins!`,
+              message: `Victory! You gained ${totalExp} EXP and ${totalCoins} coins! HP/MP fully restored!`,
               type: 'system' as const,
               timestamp: Date.now()
             }]
@@ -243,9 +251,9 @@ export const useBattle = (
           const expLoss = Math.floor(newPlayer.exp * 0.1);
           let finalPlayer = gainExp(newPlayer, -expLoss);
           
-          // Restore some HP/MP for next battle
-          finalPlayer.hp = Math.floor(finalPlayer.maxHp * 0.5);
-          finalPlayer.mp = Math.floor(finalPlayer.maxMp * 0.5);
+          // Restore full HP/MP after battle defeat (same as victory)
+          finalPlayer.hp = finalPlayer.maxHp;
+          finalPlayer.mp = finalPlayer.maxMp;
 
           const battleEndState = {
             ...prev,
@@ -256,7 +264,7 @@ export const useBattle = (
             inBattle: false,
             isPlayerTurn: true,
             battleLog: [...prev.battleLog, {
-              message: `Defeat! You lost ${expLoss} EXP!`,
+              message: `Defeat! You lost ${expLoss} EXP! HP/MP fully restored!`,
               type: 'system' as const,
               timestamp: Date.now()
             }]

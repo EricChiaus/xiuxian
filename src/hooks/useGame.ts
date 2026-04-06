@@ -1,6 +1,6 @@
-import { useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import { BattleLogEntry } from '../types/game';
-import { calculateTurnRegeneration, levelUp, canLevelUp } from '../utils/character';
+import { levelUp, canLevelUp } from '../utils/character';
 import { useGameState } from './useGameState';
 import { useBattle } from './useBattle';
 import { useShopInventory } from './useShopInventory';
@@ -60,57 +60,6 @@ export const useGame = () => {
       player: newPlayer
     }));
   }, [gameState.player, addBattleLogEntry, setGameState]);
-
-  // HP/MP regeneration when idle (not in battle)
-  useEffect(() => {
-    if (gameState.inBattle) return;
-
-    const regenerationInterval = setInterval(() => {
-      setGameState(prev => {
-        const regenRates = calculateTurnRegeneration(prev.player.level);
-        const timeDiff = (Date.now() - prev.lastRegenerationTime) / 1000; // Convert to seconds
-        const hpRegen = Math.floor(regenRates.hpRegen * timeDiff);
-        const mpRegen = Math.floor(regenRates.mpRegen * timeDiff);
-        
-        const newHp = Math.min(prev.player.maxHp, prev.player.hp + hpRegen);
-        const newMp = Math.min(prev.player.maxMp, prev.player.mp + mpRegen);
-        
-        // Stop EXP regeneration when at max level
-        // Only give EXP every 60 seconds (1 minute)
-        const expRegen = prev.player.level >= 99 ? 0 : (timeDiff >= 60 ? 1 : 0);
-        let newPlayer = { ...prev.player, hp: newHp, mp: newMp, exp: prev.player.exp + expRegen };
-        
-        // Check for level up from idle EXP gain
-        if (expRegen > 0 && canLevelUp(newPlayer)) {
-          while (canLevelUp(newPlayer)) {
-            newPlayer = levelUp(newPlayer);
-            addBattleLogEntry({
-              message: `Auto Level Up! Now level ${newPlayer.level}!`,
-              type: 'system',
-              timestamp: Date.now()
-            });
-          }
-        }
-        
-        if (newHp > prev.player.hp || newMp > prev.player.mp || newPlayer.exp > prev.player.exp) {
-          const newState = {
-            ...prev,
-            player: newPlayer,
-            lastRegenerationTime: Date.now()
-          };
-          
-          // Save game when regeneration actually happens
-          saveGame(newState);
-          
-          return newState;
-        }
-        
-        return prev;
-      });
-    }, 5000); // Check every 5 seconds
-
-    return () => clearInterval(regenerationInterval);
-  }, [gameState.inBattle, setGameState, addBattleLogEntry, saveGame]);
 
   return {
     gameState,
