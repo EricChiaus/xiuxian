@@ -21,7 +21,8 @@ const getEquipmentTypeFromChineseName = (chineseName: string): Equipment['type']
 export const useShopInventory = (
   gameState: GameState,
   setGameState: React.Dispatch<React.SetStateAction<GameState>>,
-  addBattleLogEntry: (entry: { message: string; type: 'player' | 'enemy' | 'system'; timestamp: number }) => void
+  addBattleLogEntry: (entry: { message: string; type: 'player' | 'enemy' | 'system'; timestamp: number }) => void,
+  saveGame: (state: GameState) => void
 ): {
   buyItem: (itemId: string) => void;
   sellItem: (itemId: string) => void;
@@ -175,10 +176,15 @@ export const useShopInventory = (
         }
       };
 
-      return {
+      const newState = {
         ...prev,
         player: newPlayer
       };
+      
+      // Explicit save after purchase
+      saveGame(newState);
+      
+      return newState;
     });
 
     addBattleLogEntry({
@@ -186,7 +192,7 @@ export const useShopInventory = (
       type: 'system',
       timestamp: Date.now()
     });
-  }, [gameState.shopItems, gameState.player.coin, setGameState, addBattleLogEntry]);
+  }, [gameState.shopItems, gameState.player.coin, setGameState, addBattleLogEntry, saveGame]);
 
   const sellItem = useCallback((itemId: string) => {
     if (!gameState.player.inventory.includes(itemId)) return;
@@ -212,10 +218,15 @@ export const useShopInventory = (
         newPlayer.equippedItems = newEquippedItems;
       }
 
-      return {
+      const newState = {
         ...prev,
         player: newPlayer
       };
+      
+      // Explicit save after selling
+      saveGame(newState);
+      
+      return newState;
     });
 
     addBattleLogEntry({
@@ -223,7 +234,7 @@ export const useShopInventory = (
       type: 'system',
       timestamp: Date.now()
     });
-  }, [gameState.player.inventory, getAllEquipment, setGameState, addBattleLogEntry, gameState.player.equippedItems]);
+  }, [gameState.player.inventory, getAllEquipment, setGameState, addBattleLogEntry, gameState.player.equippedItems, saveGame]);
 
   const equipItem = useCallback((itemId: string) => {
     if (!gameState.player.inventory.includes(itemId)) return;
@@ -262,12 +273,17 @@ export const useShopInventory = (
         timestamp: Date.now()
       });
       
-      setGameState((prev: GameState) => ({
-        ...prev,
+      const newState = {
+        ...gameState,
         player: newCharacter
-      }));
+      };
+      
+      // Explicit save after equipping
+      saveGame(newState);
+      
+      setGameState(newState);
     }
-  }, [gameState.player, addBattleLogEntry, setGameState, getAllEquipment]);
+  }, [gameState.player, addBattleLogEntry, setGameState, getAllEquipment, saveGame]);
 
   const unequipItem = useCallback((slot: keyof GameState['player']['equippedItems']) => {
     const equippedItemId = gameState.player.equippedItems[slot];
@@ -297,11 +313,16 @@ export const useShopInventory = (
       timestamp: Date.now()
     });
     
-    setGameState((prev: GameState) => ({
-      ...prev,
+    const newState = {
+      ...gameState,
       player: newCharacter
-    }));
-  }, [gameState.player, addBattleLogEntry, setGameState, getAllEquipment]);
+    };
+    
+    // Explicit save after unequipping
+    saveGame(newState);
+    
+    setGameState(newState);
+  }, [gameState.player, addBattleLogEntry, setGameState, getAllEquipment, saveGame]);
 
   return {
     buyItem,

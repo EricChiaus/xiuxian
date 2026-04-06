@@ -31,10 +31,11 @@ describe('BuyItem Integration Tests', () => {
 
     const mockSetGameState = vi.fn();
     const mockAddBattleLogEntry = vi.fn();
+    const mockSaveGame = vi.fn();
 
     // Render the hook
     const { result } = renderHook(() => 
-      useShopInventory(mockGameState, mockSetGameState, mockAddBattleLogEntry)
+      useShopInventory(mockGameState, mockSetGameState, mockAddBattleLogEntry, mockSaveGame)
     );
 
     // Get the buyItem function
@@ -128,10 +129,11 @@ describe('BuyItem Integration Tests', () => {
 
     const mockSetGameState = vi.fn();
     const mockAddBattleLogEntry = vi.fn();
+    const mockSaveGame = vi.fn();
 
     // Render the hook
     const { result } = renderHook(() => 
-      useShopInventory(mockGameState, mockSetGameState, mockAddBattleLogEntry)
+      useShopInventory(mockGameState, mockSetGameState, mockAddBattleLogEntry, mockSaveGame)
     );
 
     // Get all equipment and inventory equipment

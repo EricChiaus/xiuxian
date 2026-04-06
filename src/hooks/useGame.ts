@@ -27,7 +27,8 @@ export const useGame = () => {
   const { buyItem, sellItem, equipItem, unequipItem, refreshShop, getAllEquipment, getInventoryEquipment, getAvailableShopItems } = useShopInventory(
     gameState,
     setGameState,
-    addBattleLogEntry
+    addBattleLogEntry,
+    saveGame
   );
 
   // Manual level up
@@ -58,11 +59,6 @@ export const useGame = () => {
       player: newPlayer
     }));
   }, [gameState.player, addBattleLogEntry, setGameState]);
-
-  // Immediate save when player stats change
-  useEffect(() => {
-    saveGame(gameState);
-  }, [gameState, saveGame]);
 
   // HP/MP regeneration when idle (not in battle)
   useEffect(() => {
