@@ -13,10 +13,9 @@ export const createInitialCharacter = (): Character => ({
   exp: 0,
   expToNext: 100,
   coin: 100,
-  inventory: [],
+  inventory: [], // Empty array of Equipment objects
   avatar: 'avatar1',
   equippedItems: {}, // No items equipped initially
-  playerEquipment: {}, // No purchased equipment initially
   elements: { metal: 0, wood: 0, water: 0, fire: 0, earth: 0, yin: 0, yang: 0 }, // No elemental affinity initially
   elementResistance: { metal: 0, wood: 0, water: 0, fire: 0, earth: 0, yin: 0, yang: 0 } // No resistance initially
 });

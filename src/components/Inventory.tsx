@@ -36,7 +36,7 @@ const Inventory: React.FC<InventoryProps> = ({
 
   // Get equipment type from item
   const getEquipmentType = (itemId: string): keyof Character['equippedItems'] | null => {
-    const equipment = getEquipmentById(itemId);
+    const equipment = character.inventory.find(eq => eq.id === itemId);
     return equipment?.type as keyof Character['equippedItems'] || null;
   };
 
@@ -162,12 +162,11 @@ const Inventory: React.FC<InventoryProps> = ({
         <h4 className="text-lg font-bold text-red-900 mb-3" style={{ fontFamily: 'serif' }}>🎒 背包物品</h4>
         {character.inventory && character.inventory.length > 0 ? (
           <div className="space-y-3">
-            {character.inventory.map((itemId, index) => {
-              const equipment = getEquipmentById(itemId);
+            {character.inventory.map((equipment, index) => {
               if (!equipment) return null;
               
-              const equipped = isItemEquipped(itemId);
-              const type = getEquipmentType(itemId);
+              const equipped = isItemEquipped(equipment.id);
+              const type = getEquipmentType(equipment.id);
               
               return (
                 <div 
@@ -229,8 +228,8 @@ const Inventory: React.FC<InventoryProps> = ({
                       {!equipped && type && (
                         <div className="relative">
                           <button
-                            onClick={() => onEquipItem(itemId)}
-                            onMouseEnter={() => setHoveredItem(itemId)}
+                            onClick={() => onEquipItem(equipment.id)}
+                            onMouseEnter={() => setHoveredItem(equipment.id)}
                             onMouseLeave={() => setHoveredItem(null)}
                             className="px-3 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-bold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-colors border-2 border-blue-800"
                           >
@@ -238,7 +237,7 @@ const Inventory: React.FC<InventoryProps> = ({
                           </button>
                           
                           {/* Tooltip for stat comparison */}
-                          {hoveredItem === itemId && (
+                          {hoveredItem === equipment.id && (
                             <div 
                               className="absolute z-10 w-64 p-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg bottom-full mb-2 left-0"
                               dangerouslySetInnerHTML={{ 
@@ -253,8 +252,8 @@ const Inventory: React.FC<InventoryProps> = ({
                       
                       <div className="relative">
                         <button
-                          onClick={() => onSellItem(itemId)}
-                          onMouseEnter={() => setHoveredItem(itemId + '_sell')}
+                          onClick={() => onSellItem(equipment.id)}
+                          onMouseEnter={() => setHoveredItem(equipment.id + '_sell')}
                           onMouseLeave={() => setHoveredItem(null)}
                           className="px-3 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white text-sm font-bold rounded-lg hover:from-red-700 hover:to-red-800 transition-colors border-2 border-red-800"
                           disabled={equipped}
@@ -263,7 +262,7 @@ const Inventory: React.FC<InventoryProps> = ({
                         </button>
                         
                           {/* Tooltip for sell price */}
-                          {hoveredItem === itemId + '_sell' && (
+                          {hoveredItem === equipment.id + '_sell' && (
                             <div className="absolute z-10 w-32 p-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg bottom-full mb-2 right-0">
                               售价: {Math.floor(equipment.price / 2)} 🪙
                             </div>

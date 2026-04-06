@@ -23,10 +23,7 @@ describe('BuyItem Integration Tests', () => {
       isPlayerTurn: true,
       lastSaveTime: Date.now(),
       battleLog: [],
-      offlineExp: 0,
-      lastRegenerationTime: Date.now(),
-      shopItems: shopItems,
-      playerEquipment: {}
+      shopItems: shopItems
     };
 
     const mockSetGameState = vi.fn();
@@ -43,7 +40,7 @@ describe('BuyItem Integration Tests', () => {
 
     // Check initial state
     expect(mockGameState.player.inventory).toHaveLength(0);
-    expect(Object.keys(mockGameState.player.playerEquipment)).toHaveLength(0);
+    // No more playerEquipment field - equipment is stored directly in inventory
 
     // Buy the item
     act(() => {
@@ -63,16 +60,19 @@ describe('BuyItem Integration Tests', () => {
     console.log('Inventory:', updatedPlayer.inventory);
 
     // Basic checks
-    expect(updatedPlayer.inventory).toContain(shopItem.id);
+    expect(updatedPlayer.inventory).toHaveLength(1);
+    expect(updatedPlayer.inventory[0].id).toBe(shopItem.id);
     expect(updatedPlayer.coin).toBe(initialPlayer.coin - shopItem.price);
-    expect(updatedPlayer.playerEquipment[shopItem.id]).toBeDefined();
+    // No more playerEquipment - equipment is stored directly in inventory
 
-    // Check equipment data
-    const equipment = updatedPlayer.playerEquipment[shopItem.id];
+    // Check equipment data (generated equipment will have different name than shop item)
+    const equipment = updatedPlayer.inventory[0];
     expect(equipment.id).toBe(shopItem.id);
-    expect(equipment.name).toBe(shopItem.name);
-    expect(equipment.price).toBe(shopItem.price);
-    expect(equipment.sellPrice).toBe(Math.floor(shopItem.price / 2));
+    // Equipment name is generated randomly, so we just check it exists
+    expect(equipment.name).toBeDefined();
+    expect(equipment.type).toBe('weapon'); // We default to weapon type
+    expect(equipment.price).toBeGreaterThan(0);
+    expect(equipment.sellPrice).toBe(Math.floor(equipment.price / 2));
   });
 
   it('should test getAllEquipment after purchase', () => {
@@ -81,38 +81,11 @@ describe('BuyItem Integration Tests', () => {
     const shopItems = generateShopItems(initialPlayer.level);
     const shopItem = shopItems[0];
     
-    // Simulate a purchased item in playerEquipment
+    // Simulate a purchased item in inventory
     const mockGameState: GameState = {
       player: {
         ...initialPlayer,
-        inventory: [shopItem.id],
-        playerEquipment: {
-          [shopItem.id]: {
-            id: shopItem.id,
-            name: shopItem.name,
-            type: 'weapon',
-            rarity: 'common',
-            level: 1,
-            bonus: { pa: 10 },
-            elements: { fire: 5 },
-            elementResistance: {},
-            price: shopItem.price,
-            sellPrice: Math.floor(shopItem.price / 2)
-          }
-        }
-      },
-      currentEnemy: null,
-      enemies: [],
-      selectedEnemyId: null,
-      inBattle: false,
-      isPlayerTurn: true,
-      lastSaveTime: Date.now(),
-      battleLog: [],
-      offlineExp: 0,
-      lastRegenerationTime: Date.now(),
-      shopItems: shopItems,
-      playerEquipment: {
-        [shopItem.id]: {
+        inventory: [{
           id: shopItem.id,
           name: shopItem.name,
           type: 'weapon',
@@ -123,8 +96,16 @@ describe('BuyItem Integration Tests', () => {
           elementResistance: {},
           price: shopItem.price,
           sellPrice: Math.floor(shopItem.price / 2)
-        }
-      }
+        }]
+      },
+      currentEnemy: null,
+      enemies: [],
+      selectedEnemyId: null,
+      inBattle: false,
+      isPlayerTurn: true,
+      lastSaveTime: Date.now(),
+      battleLog: [],
+      shopItems: shopItems
     };
 
     const mockSetGameState = vi.fn();

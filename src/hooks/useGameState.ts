@@ -65,7 +65,6 @@ const saveGame = (state: GameState) => {
     // Create a clean save state without battle-related data
     const saveState = {
       player: state.player,
-      playerEquipment: state.playerEquipment,
       lastSaveTime: Date.now(),
       shopItems: [] // Don't save shop items - they should be randomly generated
     };
@@ -96,8 +95,7 @@ export const useGameState = () => {
         isPlayerTurn: true,
         lastSaveTime: Date.now(),
         battleLog: [], // No more offline EXP with regeneration removed
-        shopItems: generateShopItems(savedData.player.level),
-        playerEquipment: savedData.playerEquipment || {} // Preserve purchased equipment
+        shopItems: generateShopItems(savedData.player.level)
       };
     }
     
@@ -110,8 +108,7 @@ export const useGameState = () => {
       isPlayerTurn: true,
       lastSaveTime: Date.now(),
       battleLog: [],
-      shopItems: generateShopItems(createInitialCharacter().level),
-      playerEquipment: {}
+      shopItems: generateShopItems(createInitialCharacter().level)
     };
   });
 
@@ -130,8 +127,7 @@ export const useGameState = () => {
         type: 'system',
         timestamp: Date.now()
       }],
-      shopItems: generateShopItems(createInitialCharacter().level),
-      playerEquipment: {}
+      shopItems: generateShopItems(createInitialCharacter().level)
     });
   }, []);
 

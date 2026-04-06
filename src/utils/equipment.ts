@@ -248,35 +248,33 @@ export const getHighestElement = (elements: Partial<Elements> | null | undefined
 };
 
 export const equipItem = (character: Character, itemId: string): Character => {
-  // Find the equipment in all possible equipment (we need to pass this in)
-  // For now, we'll create a simple equipment lookup
-  const equipmentType = getEquipmentTypeFromId(itemId);
+  // Find the equipment in inventory
+  const equipment = character.inventory.find(eq => eq.id === itemId);
   
-  if (!equipmentType) {
-    return character; // Not an equippable item
-  }
-  
-  // Check if item is in inventory
-  if (!character.inventory.includes(itemId)) {
+  if (!equipment) {
     return character; // Item not in inventory
   }
   
   let newCharacter = { ...character };
   
-  // If there's already an item equipped in this slot, add it back to inventory
-  if (character.equippedItems[equipmentType]) {
-    newCharacter.inventory = [...character.inventory, character.equippedItems[equipmentType]!];
+  // If there's already an item equipped in this slot, mark it as unequipped
+  const currentEquippedId = character.equippedItems[equipment.type];
+  if (currentEquippedId) {
+    newCharacter.inventory = newCharacter.inventory.map(eq => 
+      eq.id === currentEquippedId ? { ...eq, equipped: false } : eq
+    );
   }
   
-  // Equip new item and remove from inventory
+  // Equip new item
   newCharacter.equippedItems = {
     ...character.equippedItems,
-    [equipmentType]: itemId
+    [equipment.type]: itemId
   };
-  newCharacter.inventory = character.inventory.filter(id => id !== itemId);
   
-  // Recalculate stats with new equipment
-  newCharacter = calculateCharacterStats(newCharacter, []);
+  // Mark the new item as equipped
+  newCharacter.inventory = newCharacter.inventory.map(eq => 
+    eq.id === itemId ? { ...eq, equipped: true } : eq
+  );
   
   return newCharacter;
 };
@@ -290,51 +288,14 @@ export const unequipItem = (character: Character, slot: keyof Character['equippe
   
   let newCharacter = { ...character };
   
-  // Add equipped item back to inventory
-  newCharacter.inventory = [...character.inventory, equippedItemId];
+  // Mark the item as unequipped in inventory
+  newCharacter.inventory = newCharacter.inventory.map(eq => 
+    eq.id === equippedItemId ? { ...eq, equipped: false } : eq
+  );
   
   // Remove from equipped items
-  const newEquippedItems = { ...character.equippedItems };
-  delete newEquippedItems[slot];
-  newCharacter.equippedItems = newEquippedItems;
-  
-  // Recalculate stats without the unequipped item
-  newCharacter = calculateCharacterStats(newCharacter, []);
+  const { [slot]: _removedItem, ...restEquippedItems } = character.equippedItems;
+  newCharacter.equippedItems = restEquippedItems;
   
   return newCharacter;
-};
-
-// Helper function to determine equipment type from ID
-const getEquipmentTypeFromId = (itemId: string): keyof Character['equippedItems'] | null => {
-  // This is a simplified version - in a real implementation, 
-  // we'd look up the actual equipment data
-  if (itemId.includes('equipment_')) {
-    // For generated equipment, we'd need to look up the actual equipment data
-    // For now, return null to let the calling function handle it
-    return null;
-  }
-  
-  if (itemId.includes('sword') || itemId.includes('staff')) {
-    return 'weapon';
-  }
-  if (itemId.includes('armor')) {
-    return 'armor';
-  }
-  if (itemId.includes('helmet')) {
-    return 'helmet';
-  }
-  if (itemId.includes('boots')) {
-    return 'boots';
-  }
-  if (itemId.includes('ring')) {
-    return 'ring';
-  }
-  if (itemId.includes('necklace')) {
-    return 'necklace';
-  }
-  if (itemId.includes('accessory')) {
-    return 'accessory';
-  }
-  
-  return null;
 };

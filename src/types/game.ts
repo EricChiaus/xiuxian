@@ -3,15 +3,15 @@ export interface Character {
   maxHp: number;
   mp: number;
   maxMp: number;
-  pa: number;  // Physical Attack
-  ma: number;  // Magic Attack
-  pd: number;  // Physical Defense
-  md: number;  // Magic Defense
+  pa: number; // Physical Attack
+  ma: number; // Magic Attack
+  pd: number; // Physical Defense
+  md: number; // Magic Defense
   level: number;
   exp: number;
   expToNext: number;
   coin: number;
-  inventory: string[]; // Simple inventory system
+  inventory: Equipment[]; // Store full equipment objects with equipped flag
   avatar: string; // Player's chosen avatar
   equippedItems: {
     weapon?: string;
@@ -21,8 +21,7 @@ export interface Character {
     ring?: string;
     necklace?: string;
     accessory?: string;
-  }; // Currently equipped items
-  playerEquipment: { [itemId: string]: Equipment }; // Stores actual equipment data for purchased items
+  }; // Currently equipped items (store IDs for reference)
   elements: Elements; // Elemental Elements
   elementResistance: ElementResistance; // Elemental resistance
 }
@@ -45,6 +44,7 @@ export interface Equipment {
   elementResistance: Partial<ElementResistance>; // Elemental resistance this equipment provides
   price: number;
   sellPrice: number;
+  equipped?: boolean; // Whether this item is currently equipped
 }
 
 export interface ShopItem {
@@ -94,7 +94,6 @@ export interface GameState {
   battleLog: BattleLogEntry[];
   lastSaveTime: number;
   shopItems: ShopItem[];
-  playerEquipment: { [itemId: string]: Equipment };
 }
 
 export interface BattleLogEntry {

@@ -1,22 +1,7 @@
 import { useCallback } from 'react';
-import { BattleLogEntry, GameState, Equipment, Character, ShopItem } from '../types/game';
+import { GameState, Equipment, ShopItem } from '../types/game';
 import { generateShopItems } from '../utils/shop';
-import { generateRandomEquipment, calculateCharacterStats, generateEquipment } from '../utils/equipment';
-import { generateEquipment as generateShopEquipment } from '../utils/shop';
-
-// Helper function to convert Chinese equipment names to English types
-const getEquipmentTypeFromChineseName = (chineseName: string): Equipment['type'] => {
-  const typeMap: { [key: string]: Equipment['type'] } = {
-    '武器': 'weapon',
-    '护甲': 'armor',
-    '头盔': 'helmet',
-    '靴子': 'boots',
-    '戒指': 'ring',
-    '项链': 'necklace',
-    '饰品': 'accessory'
-  };
-  return typeMap[chineseName] || 'weapon';
-};
+import { generateEquipment } from '../utils/equipment';
 
 export const useShopInventory = (
   gameState: GameState,
@@ -36,145 +21,63 @@ export const useShopInventory = (
   const getAllEquipment = useCallback(() => {
     const allEquipment: Equipment[] = [];
     
-    // Get equipment data from playerEquipment storage (preserves purchased items)
-    Object.entries(gameState.playerEquipment || {}).forEach(([itemId, equipmentData]) => {
-      allEquipment.push({
-        ...equipmentData,
-        id: itemId
-      });
+    // Get equipment from player inventory (already contains full equipment objects)
+    gameState.player.inventory.forEach(equipment => {
+      allEquipment.push(equipment);
     });
     
     // Add shop items for display purposes (not in inventory)
     gameState.shopItems.forEach(shopItem => {
       if (!allEquipment.find(eq => eq.id === shopItem.id)) {
-        if (shopItem.id.includes('equipment_')) {
-          // Parse the actual equipment data from shop item description
-          const level = parseInt(shopItem.description.match(/等级 (\d+)/)?.[1] || '1');
-          const rarity = shopItem.description.match(/(普通|罕见|稀有|史诗|传奇)/)?.[1] as Equipment['rarity'] || 'common';
-          const typeMatch = shopItem.description.match(/(武器|护甲|头盔|靴子|戒指|项链|饰品)/)?.[1];
-          const type = typeMatch ? getEquipmentTypeFromChineseName(typeMatch) : 'weapon';
-          
-          // Generate equipment with proper stats based on the shop item data
-          const equipment = generateEquipment(shopItem.id, type, level, rarity);
-          
-          allEquipment.push({
-            ...equipment,
-            id: shopItem.id,
-            name: shopItem.name,
-            price: shopItem.price,
-            sellPrice: Math.floor(shopItem.price / 2)
-          });
-        } else {
-          // Legacy items - use the actual equipment data from shop.ts
-          const allLegacyEquipment = generateShopEquipment();
-          const legacyEquipment = allLegacyEquipment.find((eq: Equipment) => eq.id === shopItem.id);
-          if (legacyEquipment) {
-            allEquipment.push(legacyEquipment);
-          }
-        }
+        // Convert shop item to equipment format - need to determine type
+        // For now, default to 'weapon' type
+        const equipmentData = generateEquipment(shopItem.id, 'weapon', gameState.player.level);
+        allEquipment.push(equipmentData);
       }
     });
     
     return allEquipment;
-  }, [gameState.shopItems, gameState.playerEquipment, gameState.player.equippedItems, gameState.player.level]);
+  }, [gameState.player.inventory, gameState.shopItems, gameState.player.level]);
 
-  // NEW FUNCTION: Get only inventory equipment (for inventory display)
+  // Get only inventory equipment (for inventory display)
   const getInventoryEquipment = useCallback(() => {
-    const inventoryEquipment: Equipment[] = [];
-    
-    // Only get equipment that's actually in the player's inventory
-    gameState.player.inventory.forEach(itemId => {
-      const equipmentData = gameState.playerEquipment[itemId];
-      if (equipmentData) {
-        inventoryEquipment.push({
-          ...equipmentData,
-          id: itemId
-        });
-      }
-    });
-    
-    return inventoryEquipment;
-  }, [gameState.player.inventory, gameState.playerEquipment]);
+    return gameState.player.inventory;
+  }, [gameState.player.inventory]);
 
-  // Helper function to determine equipment type from ID
-  const getEquipmentTypeFromId = (itemId: string, allEquipment: Equipment[]): keyof Character['equippedItems'] | null => {
-    // First try to find the equipment in the stored equipment data
-    const equipment = allEquipment.find(eq => eq.id === itemId);
-    if (equipment) {
-      return equipment.type;
-    }
-    
-    // Fallback to ID-based detection for legacy items
-    if (itemId.includes('sword') || itemId.includes('staff')) {
-      return 'weapon';
-    }
-    if (itemId.includes('armor')) {
-      return 'armor';
-    }
-    if (itemId.includes('helmet')) {
-      return 'helmet';
-    }
-    if (itemId.includes('boots')) {
-      return 'boots';
-    }
-    if (itemId.includes('ring')) {
-      return 'ring';
-    }
-    if (itemId.includes('necklace')) {
-      return 'necklace';
-    }
-    if (itemId.includes('accessory')) {
-      return 'accessory';
-    }
-    
-    return null;
-  };
+  // Get available shop items (exclude items already in inventory)
+  const getAvailableShopItems = useCallback(() => {
+    return gameState.shopItems.filter(shopItem => 
+      !gameState.player.inventory.find(equipment => equipment.id === shopItem.id)
+    );
+  }, [gameState.shopItems, gameState.player.inventory]);
 
-  const refreshShop = useCallback(() => {
-    const newShopItems = generateShopItems(gameState.player.level);
-    
-    setGameState(prev => ({
-      ...prev,
-      shopItems: newShopItems
-    }));
-    
-    addBattleLogEntry({
-      message: 'Shop inventory refreshed!',
-      type: 'system',
-      timestamp: Date.now()
-    });
-  }, [gameState.player.level, setGameState, addBattleLogEntry]);
-
-  const buyItem = useCallback((itemId: string): void => {
+  // Buy item from shop
+  const buyItem = useCallback((itemId: string) => {
     const shopItem = gameState.shopItems.find(item => item.id === itemId);
-    if (!shopItem || gameState.player.coin < shopItem.price) return;
+    if (!shopItem) {
+      addBattleLogEntry({
+        message: 'Item not found in shop!',
+        type: 'system',
+        timestamp: Date.now()
+      });
+      return;
+    }
 
-    // Generate the actual equipment data for this item (preserve it permanently)
-    let purchasedEquipment: Equipment;
-    if (shopItem.id.includes('equipment_')) {
-      const level = parseInt(shopItem.description.match(/等级 (\d+)/)?.[1] || '1');
-      purchasedEquipment = generateRandomEquipment(level);
-    } else {
-      purchasedEquipment = generateRandomEquipment(1);
+    if (gameState.player.coin < shopItem.price) {
+      addBattleLogEntry({
+        message: 'Not enough coins!',
+        type: 'system',
+        timestamp: Date.now()
+      });
+      return;
     }
 
     setGameState((prev: GameState) => {
       const newPlayer = { ...prev.player, coin: prev.player.coin - shopItem.price };
       
-      // Add equipment to inventory
-      newPlayer.inventory = [...newPlayer.inventory, itemId];
-      
-      // Store the actual equipment data permanently
-      newPlayer.playerEquipment = {
-        ...prev.playerEquipment,  // Keep existing equipment!
-        [itemId]: {
-          ...purchasedEquipment,
-          id: shopItem.id,
-          name: shopItem.name,
-          price: shopItem.price,
-          sellPrice: Math.floor(shopItem.price / 2)
-        }
-      };
+      // Generate equipment and add to inventory
+      const purchasedEquipment = generateEquipment(shopItem.id, 'weapon', newPlayer.level);
+      newPlayer.inventory = [...newPlayer.inventory, purchasedEquipment];
 
       const newState = {
         ...prev,
@@ -183,146 +86,138 @@ export const useShopInventory = (
       
       // Explicit save after purchase
       saveGame(newState);
-      
       return newState;
-    });
-
-    addBattleLogEntry({
-      message: `购买了 ${shopItem.name}，花费 ${shopItem.price} 🪙！`,
-      type: 'system',
-      timestamp: Date.now()
     });
   }, [gameState.shopItems, gameState.player.coin, setGameState, addBattleLogEntry, saveGame]);
 
+  // Sell item from inventory
   const sellItem = useCallback((itemId: string) => {
-    if (!gameState.player.inventory.includes(itemId)) return;
+    const equipment = gameState.player.inventory.find(eq => eq.id === itemId);
+    if (!equipment) {
+      addBattleLogEntry({
+        message: 'Item not found in inventory!',
+        type: 'system',
+        timestamp: Date.now()
+      });
+      return;
+    }
 
-    const allEquipment = getAllEquipment();
-    const item = allEquipment.find(eq => eq.id === itemId);
-    if (!item) return;
+    // Check if item is equipped
+    const isEquipped = Object.values(gameState.player.equippedItems).includes(itemId);
+    if (isEquipped) {
+      addBattleLogEntry({
+        message: 'Cannot sell equipped item!',
+        type: 'system',
+        timestamp: Date.now()
+      });
+      return;
+    }
 
-    const sellPrice = Math.floor(item.price / 2);
-    
     setGameState((prev: GameState) => {
-      const newPlayer = { ...prev.player, coin: prev.player.coin + sellPrice };
-      newPlayer.inventory = newPlayer.inventory.filter((id: string) => id !== itemId);
-
-      // Remove from equipped items if selling equipped item
-      const equippedSlot = Object.keys(prev.player.equippedItems).find(
-        slot => prev.player.equippedItems[slot as keyof typeof prev.player.equippedItems] === itemId
-      ) as keyof typeof prev.player.equippedItems;
+      const newPlayer = { ...prev.player, coin: prev.player.coin + equipment.sellPrice };
       
-      if (equippedSlot) {
-        const newEquippedItems = { ...newPlayer.equippedItems };
-        delete newEquippedItems[equippedSlot];
-        newPlayer.equippedItems = newEquippedItems;
-      }
+      // Remove from inventory
+      newPlayer.inventory = newPlayer.inventory.filter(eq => eq.id !== itemId);
 
       const newState = {
         ...prev,
         player: newPlayer
       };
       
-      // Explicit save after selling
+      // Explicit save after sale
       saveGame(newState);
-      
       return newState;
     });
+  }, [gameState.player.inventory, gameState.player.equippedItems, setGameState, addBattleLogEntry, saveGame]);
 
-    addBattleLogEntry({
-      message: `出售了 ${item.name}，获得 ${sellPrice} 🪙！`,
-      type: 'system',
-      timestamp: Date.now()
-    });
-  }, [gameState.player.inventory, getAllEquipment, setGameState, addBattleLogEntry, gameState.player.equippedItems, saveGame]);
-
+  // Equip item
   const equipItem = useCallback((itemId: string) => {
-    if (!gameState.player.inventory.includes(itemId)) return;
-
-    const allEquipment = getAllEquipment();
-    
-    // Try to equip item
-    const equipmentType = getEquipmentTypeFromId(itemId, allEquipment);
-    if (!equipmentType) return;
-    
-    let newCharacter = { ...gameState.player };
-    
-    // If there's already an item equipped in this slot, add it back to inventory
-    if (newCharacter.equippedItems[equipmentType]) {
-      newCharacter.inventory = [...newCharacter.inventory, newCharacter.equippedItems[equipmentType]!];
-    }
-    
-    // Equip new item and remove from inventory
-    newCharacter.equippedItems = {
-      ...newCharacter.equippedItems,
-      [equipmentType]: itemId
-    };
-    newCharacter.inventory = newCharacter.inventory.filter(id => id !== itemId);
-    
-    // Recalculate stats with new equipment
-    newCharacter = calculateCharacterStats(newCharacter, allEquipment.filter(eq => Object.values(newCharacter.equippedItems).includes(eq.id)));
-    
-    // Check if item was actually equipped (stats changed)
-    const item = allEquipment.find(eq => eq.id === itemId);
-    const itemName = item?.name || itemId;
-    
-    if (JSON.stringify(newCharacter) !== JSON.stringify(gameState.player)) {
+    const equipment = gameState.player.inventory.find(eq => eq.id === itemId);
+    if (!equipment) {
       addBattleLogEntry({
-        message: `装备了 ${itemName}！`,
+        message: 'Item not found in inventory!',
         type: 'system',
         timestamp: Date.now()
       });
+      return;
+    }
+
+    setGameState((prev: GameState) => {
+      const newPlayer = { ...prev.player };
       
+      // Unequip current item in the same slot if exists
+      const currentEquippedId = prev.player.equippedItems[equipment.type];
+      if (currentEquippedId) {
+        // Mark the old item as unequipped
+        newPlayer.inventory = newPlayer.inventory.map(eq => 
+          eq.id === currentEquippedId ? { ...eq, equipped: false } : eq
+        );
+      }
+      
+      // Equip new item
+      newPlayer.equippedItems = {
+        ...prev.player.equippedItems,
+        [equipment.type]: itemId
+      };
+      
+      // Mark the new item as equipped
+      newPlayer.inventory = newPlayer.inventory.map(eq => 
+        eq.id === itemId ? { ...eq, equipped: true } : eq
+      );
+
       const newState = {
-        ...gameState,
-        player: newCharacter
+        ...prev,
+        player: newPlayer
       };
       
       // Explicit save after equipping
       saveGame(newState);
-      
-      setGameState(newState);
-    }
-  }, [gameState.player, addBattleLogEntry, setGameState, getAllEquipment, saveGame]);
-
-  const unequipItem = useCallback((slot: keyof GameState['player']['equippedItems']) => {
-    const equippedItemId = gameState.player.equippedItems[slot];
-    
-    if (!equippedItemId) return;
-
-    let newCharacter = { ...gameState.player };
-    
-    // Add equipped item back to inventory
-    newCharacter.inventory = [...newCharacter.inventory, equippedItemId];
-    
-    // Remove from equipped items
-    const newEquippedItems = { ...newCharacter.equippedItems };
-    delete newEquippedItems[slot];
-    newCharacter.equippedItems = newEquippedItems;
-    
-    // Recalculate stats without the unequipped item
-    newCharacter = calculateCharacterStats(newCharacter, []);
-    
-    const allEquipment = getAllEquipment();
-    const item = allEquipment.find(eq => eq.id === equippedItemId);
-    const itemName = item?.name || equippedItemId;
-    
-    addBattleLogEntry({
-      message: `卸下了 ${itemName}！`,
-      type: 'system',
-      timestamp: Date.now()
+      return newState;
     });
-    
-    const newState = {
-      ...gameState,
-      player: newCharacter
-    };
-    
-    // Explicit save after unequipping
-    saveGame(newState);
-    
-    setGameState(newState);
-  }, [gameState.player, addBattleLogEntry, setGameState, getAllEquipment, saveGame]);
+  }, [gameState.player.inventory, gameState.player.equippedItems, setGameState, addBattleLogEntry, saveGame]);
+
+  // Unequip item
+  const unequipItem = useCallback((slot: "weapon" | "armor" | "accessory" | "helmet" | "boots" | "ring" | "necklace") => {
+    const equippedItemId = gameState.player.equippedItems[slot];
+    if (!equippedItemId) {
+      addBattleLogEntry({
+        message: 'No item equipped in this slot!',
+        type: 'system',
+        timestamp: Date.now()
+      });
+      return;
+    }
+
+    setGameState((prev: GameState) => {
+      const newPlayer = { ...prev.player };
+      
+      // Remove from equipped items
+      const { [slot]: removedItem, ...restEquippedItems } = prev.player.equippedItems;
+      newPlayer.equippedItems = restEquippedItems;
+      
+      // Mark the item as unequipped in inventory
+      newPlayer.inventory = newPlayer.inventory.map(eq => 
+        eq.id === equippedItemId ? { ...eq, equipped: false } : eq
+      );
+
+      const newState = {
+        ...prev,
+        player: newPlayer
+      };
+      
+      // Explicit save after unequipping
+      saveGame(newState);
+      return newState;
+    });
+  }, [gameState.player.equippedItems, gameState.player.inventory, setGameState, addBattleLogEntry, saveGame]);
+
+  // Refresh shop (generate new items)
+  const refreshShop = useCallback(() => {
+    setGameState(prev => ({
+      ...prev,
+      shopItems: generateShopItems(prev.player.level)
+    }));
+  }, [setGameState]);
 
   return {
     buyItem,
@@ -332,14 +227,6 @@ export const useShopInventory = (
     refreshShop,
     getAllEquipment,
     getInventoryEquipment,
-    getAvailableShopItems: () => {
-      // Filter out items that are already in inventory or equipped
-      const purchasedItemIds = new Set([
-        ...gameState.player.inventory,
-        ...Object.values(gameState.player.equippedItems).filter(Boolean)
-      ]);
-      
-      return gameState.shopItems.filter(shopItem => !purchasedItemIds.has(shopItem.id));
-    }
+    getAvailableShopItems
   };
 };
