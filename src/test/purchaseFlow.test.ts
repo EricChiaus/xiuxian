@@ -268,22 +268,15 @@ describe('Purchase Flow Integration Tests', () => {
       expect(newPlayer.playerEquipment[shopItem2.id].name).toBe(shopItem2.name);
     });
 
-    it('should handle empty playerEquipment correctly', () => {
+    it('should handle empty inventory correctly', () => {
       const player = createInitialCharacter();
       
       // Verify initial state
       expect(player.inventory).toHaveLength(0);
-      expect(Object.keys(player.playerEquipment)).toHaveLength(0);
-      expect(player.playerEquipment).toEqual({});
+      // No more playerEquipment - equipment is stored directly in inventory
 
       // Test equipment retrieval with empty storage
-      const allEquipment: Equipment[] = [];
-      Object.entries(player.playerEquipment).forEach(([itemId, equipment]) => {
-        allEquipment.push({
-          ...equipment,
-          id: itemId
-        });
-      });
+      const allEquipment: Equipment[] = player.inventory; // Direct access to inventory
 
       expect(allEquipment).toHaveLength(0);
     });

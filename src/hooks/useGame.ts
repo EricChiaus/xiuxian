@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { BattleLogEntry } from '../types/game';
 import { levelUp, canLevelUp } from '../utils/character';
 import { useGameState } from './useGameState';
@@ -60,6 +60,55 @@ export const useGame = () => {
       player: newPlayer
     }));
   }, [gameState.player, addBattleLogEntry, setGameState]);
+
+  // Auto EXP growth every 10 seconds (not during battle)
+  useEffect(() => {
+    if (gameState.inBattle) return;
+
+    const expInterval = setInterval(() => {
+      setGameState(prev => {
+        // Don't give EXP if at max level
+        if (prev.player.level >= 99) return prev;
+        
+        const newPlayer = { ...prev.player, exp: prev.player.exp + 1 };
+        
+        // Check for level up
+        if (canLevelUp(newPlayer)) {
+          let finalPlayer = newPlayer;
+          
+          // Level up as many times as possible
+          while (canLevelUp(finalPlayer)) {
+            finalPlayer = levelUp(finalPlayer);
+            addBattleLogEntry({
+              message: `Auto Level Up! Now level ${finalPlayer.level}!`,
+              type: 'system',
+              timestamp: Date.now()
+            });
+          }
+          
+          const newState = {
+            ...prev,
+            player: finalPlayer
+          };
+          
+          // Save after auto level up
+          saveGame(newState);
+          return newState;
+        }
+        
+        // Save after EXP gain
+        const newState = {
+          ...prev,
+          player: newPlayer
+        };
+        
+        saveGame(newState);
+        return newState;
+      });
+    }, 10000); // Every 10 seconds
+
+    return () => clearInterval(expInterval);
+  }, [gameState.inBattle, setGameState, addBattleLogEntry, saveGame]);
 
   return {
     gameState,

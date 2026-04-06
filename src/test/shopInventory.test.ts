@@ -372,13 +372,13 @@ describe('Shop & Inventory Core Logic', () => {
       expect(character.equippedItems).toEqual({});
     });
 
-    it('should handle playerEquipment storage correctly', () => {
+    it('should handle inventory storage correctly', () => {
       const character = createInitialCharacter();
       
-      // Check that character has playerEquipment storage
-      expect(character).toHaveProperty('playerEquipment');
-      expect(typeof character.playerEquipment).toBe('object');
-      expect(Array.isArray(character.playerEquipment)).toBe(false); // Should be object, not array
+      // Check that character has inventory storage
+      expect(character).toHaveProperty('inventory');
+      expect(Array.isArray(character.inventory)).toBe(true); // Should be array of Equipment objects
+      // No more playerEquipment - equipment is stored directly in inventory
     });
   });
 });
