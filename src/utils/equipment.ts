@@ -292,55 +292,5 @@ export const getAllElementDamage = (attackerElements: Partial<Elements> | null |
   return { totalDamage, elementDamages };
 };
 
-export const equipItem = (character: Character, itemId: string): Character => {
-  // Find the equipment in inventory
-  const equipment = character.inventory.find(eq => eq.id === itemId);
-  
-  if (!equipment) {
-    return character; // Item not in inventory
-  }
-  
-  let newCharacter = { ...character };
-  
-  // If there's already an item equipped in this slot, mark it as unequipped
-  const currentEquippedId = character.equippedItems[equipment.type];
-  if (currentEquippedId) {
-    newCharacter.inventory = newCharacter.inventory.map(eq => 
-      eq.id === currentEquippedId ? { ...eq, equipped: false } : eq
-    );
-  }
-  
-  // Equip new item
-  newCharacter.equippedItems = {
-    ...character.equippedItems,
-    [equipment.type]: itemId
-  };
-  
-  // Mark the new item as equipped
-  newCharacter.inventory = newCharacter.inventory.map(eq => 
-    eq.id === itemId ? { ...eq, equipped: true } : eq
-  );
-  
-  return newCharacter;
-};
-
-export const unequipItem = (character: Character, slot: keyof Character['equippedItems']): Character => {
-  const equippedItemId = character.equippedItems[slot];
-  
-  if (!equippedItemId) {
-    return character; // Nothing equipped in this slot
-  }
-  
-  let newCharacter = { ...character };
-  
-  // Mark the item as unequipped in inventory
-  newCharacter.inventory = newCharacter.inventory.map(eq => 
-    eq.id === equippedItemId ? { ...eq, equipped: false } : eq
-  );
-  
-  // Remove from equipped items
-  const { [slot]: _removedItem, ...restEquippedItems } = character.equippedItems;
-  newCharacter.equippedItems = restEquippedItems;
-  
-  return newCharacter;
-};
+// Note: equip/unequip behavior for the player is implemented in
+// `useShopInventory` using the `equipped` flag on inventory items.

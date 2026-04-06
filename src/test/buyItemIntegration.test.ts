@@ -123,7 +123,7 @@ describe('BuyItem Integration Tests', () => {
     console.log('All equipment:', allEquipment);
     console.log('Inventory equipment:', inventoryEquipment);
 
-    // Verify equipment retrieval - should only return inventory items
+    // Verify equipment retrieval
     expect(inventoryEquipment).toHaveLength(1);
     expect(inventoryEquipment[0].id).toBe(shopItem.id);
     expect(inventoryEquipment[0].name).toBe(shopItem.name);

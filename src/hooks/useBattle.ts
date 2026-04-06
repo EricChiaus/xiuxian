@@ -65,16 +65,20 @@ export const useBattle = (
 
     // No auto level up - players must level up manually
 
+    // Prepare updated enemies based on current snapshot of state
+    const updatedEnemies = gameState.enemies.map(e => 
+      e.id === playerResult.enemy.id ? playerResult.enemy : e
+    );
+
     // Update game state with damaged enemy and player changes
     setGameState(prev => ({
       ...prev,
       player: playerResult.character,
       currentEnemy: playerResult.enemy,
-      enemies: prev.enemies.map(e => e.id === playerResult.enemy.id ? playerResult.enemy : e)
+      enemies: updatedEnemies
     }));
 
-    // Check if battle ended after player action
-    const updatedEnemies = gameState.enemies.map(e => e.id === playerResult.enemy.id ? playerResult.enemy : e);
+    // Check if battle ended after player action using the same updatedEnemies snapshot
     const allEnemiesDefeated = updatedEnemies.every(enemy => enemy.hp <= 0);
     
     if (allEnemiesDefeated) {

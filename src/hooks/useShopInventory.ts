@@ -22,23 +22,21 @@ export const useShopInventory = (
   const getAllEquipment = useCallback(() => {
     const allEquipment: Equipment[] = [];
     
-    // Get equipment from player inventory (already contains full equipment objects)
+    // Include all equipment the player currently owns
     gameState.player.inventory.forEach(equipment => {
       allEquipment.push(equipment);
     });
     
-    // Add shop items for display purposes (not in inventory)
+    // Include equipment that is currently in the shop but not yet owned
     gameState.shopItems.forEach(shopItem => {
-      if (!allEquipment.find(eq => eq.id === shopItem.id)) {
-        // Convert shop item to equipment format - need to determine type
-        // For now, default to 'weapon' type
-        const equipmentData = generateEquipment(shopItem.id, 'weapon', gameState.player.level);
+      const equipmentData = shopItem.equipmentData;
+      if (!allEquipment.find(eq => eq.id === equipmentData.id)) {
         allEquipment.push(equipmentData);
       }
     });
     
     return allEquipment;
-  }, [gameState.player.inventory, gameState.shopItems, gameState.player.level]);
+  }, [gameState.player.inventory, gameState.shopItems]);
 
   // Get only inventory equipment (for inventory display)
   const getInventoryEquipment = useCallback(() => {
