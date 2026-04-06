@@ -3,41 +3,34 @@ import { Character, Equipment, getRarityName, getRarityColor, getEquipmentTypeNa
 
 interface InventoryProps {
   character: Character;
-  allEquipment: Equipment[];
   onEquipItem: (itemId: string) => void;
-  onUnequipItem: (slot: keyof Character['equippedItems']) => void;
+  onUnequipItem: (itemId: string) => void;
   onSellItem: (itemId: string) => void;
 }
 
 const Inventory: React.FC<InventoryProps> = ({ 
   character, 
-  allEquipment, 
   onEquipItem, 
   onUnequipItem, 
   onSellItem 
 }) => {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
-  // Get equipment data by ID
-  const getEquipmentById = (id: string): Equipment | undefined => {
-    return allEquipment.find(eq => eq.id === id);
-  };
-
-  // Get equipped equipment data
-  const getEquippedEquipment = (slot: keyof Character['equippedItems']): Equipment | undefined => {
-    const itemId = character.equippedItems[slot];
-    return itemId ? getEquipmentById(itemId) : undefined;
+  // Get currently equipped equipment of the same type
+  const getEquippedEquipmentByType = (type: Equipment['type']): Equipment | undefined => {
+    return character.inventory.find(eq => eq.equipped && eq.type === type);
   };
 
   // Check if item is equipped
   const isItemEquipped = (itemId: string): boolean => {
-    return Object.values(character.equippedItems).includes(itemId);
+    const equipment = character.inventory.find(eq => eq.id === itemId);
+    return equipment?.equipped || false;
   };
 
   // Get equipment type from item
-  const getEquipmentType = (itemId: string): keyof Character['equippedItems'] | null => {
+  const getEquipmentType = (itemId: string): Equipment['type'] | null => {
     const equipment = character.inventory.find(eq => eq.id === itemId);
-    return equipment?.type as keyof Character['equippedItems'] || null;
+    return equipment?.type || null;
   };
 
   // Calculate stat comparison
@@ -242,7 +235,7 @@ const Inventory: React.FC<InventoryProps> = ({
                               className="absolute z-10 w-64 p-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg bottom-full mb-2 left-0"
                               dangerouslySetInnerHTML={{ 
                                 __html: formatStatComparison(
-                                  getStatComparison(equipment, getEquippedEquipment(type!))
+                                  getStatComparison(equipment, getEquippedEquipmentByType(type!))
                                 )
                               }}
                             />
@@ -284,7 +277,7 @@ const Inventory: React.FC<InventoryProps> = ({
         <h4 className="text-lg font-bold text-red-900 mb-3" style={{ fontFamily: 'serif' }}>🎯 当前装备</h4>
         <div className="grid grid-cols-2 gap-3">
           {equipmentSlots.map(slot => {
-            const equippedItem = getEquippedEquipment(slot.key);
+            const equippedItem = character.inventory.find(eq => eq.equipped && eq.type === slot.key);
             
             return (
               <div 
@@ -296,7 +289,7 @@ const Inventory: React.FC<InventoryProps> = ({
                   <span className="text-amber-800 font-semibold">{slot.name}:</span>
                   {equippedItem && (
                     <button
-                      onClick={() => onUnequipItem(slot.key)}
+                      onClick={() => equippedItem && onUnequipItem(equippedItem.id)}
                       className="px-2 py-1 bg-gradient-to-r from-orange-600 to-red-600 text-white text-xs font-bold rounded hover:from-orange-700 hover:to-red-700 transition-colors"
                     >
                       脱下

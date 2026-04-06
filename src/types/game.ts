@@ -13,15 +13,6 @@ export interface Character {
   coin: number;
   inventory: Equipment[]; // Store full equipment objects with equipped flag
   avatar: string; // Player's chosen avatar
-  equippedItems: {
-    weapon?: string;
-    armor?: string;
-    helmet?: string;
-    boots?: string;
-    ring?: string;
-    necklace?: string;
-    accessory?: string;
-  }; // Currently equipped items (store IDs for reference)
   elements: Elements; // Elemental Elements
   elementResistance: ElementResistance; // Elemental resistance
 }

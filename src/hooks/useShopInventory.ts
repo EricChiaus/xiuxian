@@ -1,7 +1,8 @@
 import { useCallback } from 'react';
-import { GameState, Equipment, ShopItem } from '../types/game';
+import { GameState, Equipment, ShopItem, Elements, ElementResistance } from '../types/game';
 import { generateShopItems } from '../utils/shop';
 import { generateEquipment } from '../utils/equipment';
+import { calculateStats } from '../utils/character';
 
 export const useShopInventory = (
   gameState: GameState,
@@ -103,7 +104,7 @@ export const useShopInventory = (
     }
 
     // Check if item is equipped
-    const isEquipped = Object.values(gameState.player.equippedItems).includes(itemId);
+    const isEquipped = gameState.player.inventory.some(eq => eq.id === itemId && eq.equipped);
     if (isEquipped) {
       addBattleLogEntry({
         message: 'Cannot sell equipped item!',
@@ -128,7 +129,7 @@ export const useShopInventory = (
       saveGame(newState);
       return newState;
     });
-  }, [gameState.player.inventory, gameState.player.equippedItems, setGameState, addBattleLogEntry, saveGame]);
+  }, [gameState.player.inventory, setGameState, addBattleLogEntry, saveGame]);
 
   // Equip item
   const equipItem = useCallback((itemId: string) => {
@@ -146,42 +147,83 @@ export const useShopInventory = (
       const newPlayer = { ...prev.player };
       
       // Unequip current item in the same slot if exists
-      const currentEquippedId = prev.player.equippedItems[equipment.type];
-      if (currentEquippedId) {
+      const currentlyEquipped = prev.player.inventory.find(eq => eq.equipped && eq.type === equipment.type);
+      if (currentlyEquipped) {
         // Mark the old item as unequipped
         newPlayer.inventory = newPlayer.inventory.map(eq => 
-          eq.id === currentEquippedId ? { ...eq, equipped: false } : eq
+          eq.id === currentlyEquipped.id ? { ...eq, equipped: false } : eq
         );
       }
       
-      // Equip new item
-      newPlayer.equippedItems = {
-        ...prev.player.equippedItems,
-        [equipment.type]: itemId
-      };
-      
-      // Mark the new item as equipped
+      // Equip the new item
       newPlayer.inventory = newPlayer.inventory.map(eq => 
         eq.id === itemId ? { ...eq, equipped: true } : eq
       );
+      
+      // Recalculate stats based on equipped items
+      const equippedItems = newPlayer.inventory.filter(eq => eq.equipped);
+      
+      // Reset stats to base values
+      const baseCharacter = calculateStats({
+        ...newPlayer,
+        inventory: [], // Remove equipment for base calculation
+        elements: { metal: 0, wood: 0, water: 0, fire: 0, earth: 0, yin: 0, yang: 0 },
+        elementResistance: { metal: 0, wood: 0, water: 0, fire: 0, earth: 0, yin: 0, yang: 0 }
+      });
+      
+      // Apply equipment bonuses
+      newPlayer.pa = baseCharacter.pa;
+      newPlayer.ma = baseCharacter.ma;
+      newPlayer.pd = baseCharacter.pd;
+      newPlayer.md = baseCharacter.md;
+      newPlayer.maxHp = baseCharacter.maxHp;
+      newPlayer.maxMp = baseCharacter.maxMp;
+      newPlayer.elements = { ...baseCharacter.elements };
+      newPlayer.elementResistance = { ...baseCharacter.elementResistance };
+      
+      equippedItems.forEach(eq => {
+        if (eq.bonus.pa) newPlayer.pa += eq.bonus.pa;
+        if (eq.bonus.ma) newPlayer.ma += eq.bonus.ma;
+        if (eq.bonus.pd) newPlayer.pd += eq.bonus.pd;
+        if (eq.bonus.md) newPlayer.md += eq.bonus.md;
+        if (eq.bonus.maxHp) newPlayer.maxHp += eq.bonus.maxHp;
+        if (eq.bonus.maxMp) newPlayer.maxMp += eq.bonus.maxMp;
+        
+        // Add elemental bonuses
+        Object.entries(eq.elements).forEach(([element, value]) => {
+          if (value && element in newPlayer.elements) {
+            newPlayer.elements[element as keyof Elements] += value;
+          }
+        });
+        
+        // Add elemental resistance
+        Object.entries(eq.elementResistance).forEach(([element, value]) => {
+          if (value && element in newPlayer.elementResistance) {
+            newPlayer.elementResistance[element as keyof ElementResistance] += value;
+          }
+        });
+      });
+      
+      // Ensure current HP/MP don't exceed new max values
+      newPlayer.hp = Math.min(newPlayer.hp, newPlayer.maxHp);
+      newPlayer.mp = Math.min(newPlayer.mp, newPlayer.maxMp);
 
       const newState = {
         ...prev,
         player: newPlayer
       };
       
-      // Explicit save after equipping
       saveGame(newState);
       return newState;
     });
-  }, [gameState.player.inventory, gameState.player.equippedItems, setGameState, addBattleLogEntry, saveGame]);
+  }, [gameState.player.inventory, setGameState, addBattleLogEntry, saveGame]);
 
   // Unequip item
-  const unequipItem = useCallback((slot: "weapon" | "armor" | "accessory" | "helmet" | "boots" | "ring" | "necklace") => {
-    const equippedItemId = gameState.player.equippedItems[slot];
-    if (!equippedItemId) {
+  const unequipItem = useCallback((itemId: string) => {
+    const equippedItem = gameState.player.inventory.find(eq => eq.id === itemId && eq.equipped);
+    if (!equippedItem) {
       addBattleLogEntry({
-        message: 'No item equipped in this slot!',
+        message: 'Item not found or not equipped!',
         type: 'system',
         timestamp: Date.now()
       });
@@ -191,14 +233,58 @@ export const useShopInventory = (
     setGameState((prev: GameState) => {
       const newPlayer = { ...prev.player };
       
-      // Remove from equipped items
-      const { [slot]: _removedItem, ...restEquippedItems } = prev.player.equippedItems;
-      newPlayer.equippedItems = restEquippedItems;
-      
       // Mark the item as unequipped in inventory
       newPlayer.inventory = newPlayer.inventory.map(eq => 
-        eq.id === equippedItemId ? { ...eq, equipped: false } : eq
+        eq.id === itemId ? { ...eq, equipped: false } : eq
       );
+      
+      // Recalculate stats based on equipped items
+      const equippedItems = newPlayer.inventory.filter(eq => eq.equipped);
+      
+      // Reset stats to base values
+      const baseCharacter = calculateStats({
+        ...newPlayer,
+        inventory: [], // Remove equipment for base calculation
+        elements: { metal: 0, wood: 0, water: 0, fire: 0, earth: 0, yin: 0, yang: 0 },
+        elementResistance: { metal: 0, wood: 0, water: 0, fire: 0, earth: 0, yin: 0, yang: 0 }
+      });
+      
+      // Apply equipment bonuses
+      newPlayer.pa = baseCharacter.pa;
+      newPlayer.ma = baseCharacter.ma;
+      newPlayer.pd = baseCharacter.pd;
+      newPlayer.md = baseCharacter.md;
+      newPlayer.maxHp = baseCharacter.maxHp;
+      newPlayer.maxMp = baseCharacter.maxMp;
+      newPlayer.elements = { ...baseCharacter.elements };
+      newPlayer.elementResistance = { ...baseCharacter.elementResistance };
+      
+      equippedItems.forEach(eq => {
+        if (eq.bonus.pa) newPlayer.pa += eq.bonus.pa;
+        if (eq.bonus.ma) newPlayer.ma += eq.bonus.ma;
+        if (eq.bonus.pd) newPlayer.pd += eq.bonus.pd;
+        if (eq.bonus.md) newPlayer.md += eq.bonus.md;
+        if (eq.bonus.maxHp) newPlayer.maxHp += eq.bonus.maxHp;
+        if (eq.bonus.maxMp) newPlayer.maxMp += eq.bonus.maxMp;
+        
+        // Add elemental bonuses
+        Object.entries(eq.elements).forEach(([element, value]) => {
+          if (value && element in newPlayer.elements) {
+            (newPlayer.elements as any)[element] += value;
+          }
+        });
+        
+        // Add elemental resistance
+        Object.entries(eq.elementResistance).forEach(([element, value]) => {
+          if (value && element in newPlayer.elementResistance) {
+            (newPlayer.elementResistance as any)[element] += value;
+          }
+        });
+      });
+      
+      // Ensure current HP/MP don't exceed new max values
+      newPlayer.hp = Math.min(newPlayer.hp, newPlayer.maxHp);
+      newPlayer.mp = Math.min(newPlayer.mp, newPlayer.maxMp);
 
       const newState = {
         ...prev,
@@ -209,7 +295,7 @@ export const useShopInventory = (
       saveGame(newState);
       return newState;
     });
-  }, [gameState.player.equippedItems, gameState.player.inventory, setGameState, addBattleLogEntry, saveGame]);
+  }, [gameState.player.inventory, setGameState, addBattleLogEntry, saveGame]);
 
   // Refresh shop (generate new items)
   const refreshShop = useCallback(() => {
