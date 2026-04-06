@@ -1,5 +1,18 @@
 import React from 'react';
 import { ShopItem } from '../types/game';
+
+// Utility to get background color class based on rarity
+function getRarityBg(rarity?: string) {
+  switch (rarity) {
+    case 'common': return 'bg-gray-100';
+    case 'uncommon': return 'bg-green-100';
+    case 'rare': return 'bg-blue-100';
+    case 'epic': return 'bg-purple-200';
+    case 'legendary': return 'bg-yellow-200';
+    default: return 'bg-amber-50';
+  }
+}
+
 import { getCultivatorLevelName } from '../types/game';
 
 interface ShopProps {
@@ -35,7 +48,7 @@ const Shop: React.FC<ShopProps> = ({ shopItems, playerCoins, playerLevel, onBuyI
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {shopItems.map((item) => (
-            <div key={item.id} className="border-2 border-amber-600 rounded-lg p-3 hover:shadow-md transition-shadow bg-gradient-to-br from-amber-50 to-orange-50">
+            <div key={item.id} className={`border-2 border-amber-600 rounded-lg p-3 hover:shadow-md transition-shadow ${getRarityBg(item.equipmentData?.rarity)}`}>
               <div className="flex justify-between items-start mb-2">
                 <h4 className="font-semibold text-red-900" style={{ fontFamily: 'serif' }}>{item.name}</h4>
                 <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded border border-red-300">

@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useSkyTower } from './hooks/useSkyTower';
+import SkyTowerModal from './components/SkyTowerModal';
 import CharacterPanel from './components/CharacterPanel';
 import BattleArea from './components/BattleArea';
 import BattleModal from './components/BattleModal';
@@ -13,6 +15,24 @@ function AppContent() {
   const [showShop, setShowShop] = useState(false);
   const [showInventory, setShowInventory] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+
+  // Sky Tower logic via custom hook
+  const {
+    skyTowerFloor,
+    showSkyTowerModal,
+    skyTowerEnemies,
+    skyTowerBattleResult,
+    skyTowerRewards,
+    skyTowerPlayer,
+    skyTowerLog,
+    skyTowerTurn,
+    openSkyTowerModal,
+    handleSkyTowerAction,
+    closeSkyTowerModal,
+    // setSkyTowerPlayer is not used
+  } = useSkyTower(gameState.player);
+
+  // --- END OF HOOKS AND STATE ---
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-900 via-amber-800 to-yellow-900 flex items-center justify-center p-4 relative overflow-hidden">
@@ -81,6 +101,35 @@ function AppContent() {
               inBattle={gameState.inBattle}
               onStartBattle={startBattle}
             />
+            {/* Sky Tower Block */}
+            <div className="mt-6 p-6 bg-gradient-to-br from-blue-100 to-purple-200 rounded-2xl border-4 border-blue-400 shadow-xl flex flex-col items-center">
+              <h2 className="text-2xl font-bold text-blue-900 mb-2" style={{ fontFamily: 'serif' }}>🗼 天空之塔</h2>
+              <div className="text-lg text-blue-800 mb-2">当前最高层: {skyTowerFloor}
+              {showSkyTowerModal && (
+  // @ts-ignore
+  <SkyTowerModal
+    inBattle={true}
+    enemies={skyTowerEnemies}
+    player={skyTowerPlayer}
+    selectedEnemyId={skyTowerEnemies[0]?.id}
+    isPlayerTurn={skyTowerTurn}
+    battleLog={skyTowerLog}
+    battleResult={skyTowerBattleResult}
+    rewards={skyTowerRewards}
+    onAction={handleSkyTowerAction}
+    onSelectEnemy={() => {}}
+    onCloseModal={closeSkyTowerModal}
+  />
+)}</div>
+              <button
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold text-lg shadow hover:bg-blue-700 disabled:bg-gray-400 disabled:text-gray-200 transition-colors"
+                onClick={openSkyTowerModal}
+                disabled={gameState.inBattle}
+              >
+                挑战第 {skyTowerFloor + 1} 层
+              </button>
+              <div className="text-xs text-gray-600 mt-2">每层有3名精英敌人，奖励为大量金币、经验和史诗及以上装备</div>
+            </div>
           </div>
         </div>
 
