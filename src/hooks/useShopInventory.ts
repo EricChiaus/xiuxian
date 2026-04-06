@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { GameState, Equipment, ShopItem, Elements, ElementResistance } from '../types/game';
 import { generateShopItems } from '../utils/shop';
-import { generateEquipment } from '../utils/equipment';
+import { generateEquipment, generateRandomEquipment } from '../utils/equipment';
 import { calculateStats } from '../utils/character';
 
 export const useShopInventory = (
@@ -77,7 +77,14 @@ export const useShopInventory = (
       const newPlayer = { ...prev.player, coin: prev.player.coin - shopItem.price };
       
       // Generate equipment and add to inventory
-      const purchasedEquipment = shopItem;
+      // We need to regenerate the equipment since shop only stores ShopItem display data
+      const purchasedEquipment = generateRandomEquipment(newPlayer.level);
+      // But use the shop item's ID, name, and price to maintain consistency
+      purchasedEquipment.id = shopItem.id;
+      purchasedEquipment.name = shopItem.name;
+      purchasedEquipment.price = shopItem.price;
+      purchasedEquipment.sellPrice = Math.floor(shopItem.price / 2);
+      
       newPlayer.inventory = [...newPlayer.inventory, purchasedEquipment];
 
       const newState = {
@@ -190,23 +197,42 @@ export const useShopInventory = (
         if (eq.bonus.maxMp) newPlayer.maxMp += eq.bonus.maxMp;
         
         // Add elemental bonuses
-        Object.entries(eq.elements).forEach(([element, value]) => {
-          if (value && element in newPlayer.elements) {
-            newPlayer.elements[element as keyof Elements] += value;
-          }
-        });
+        if (eq.elements) {
+          Object.entries(eq.elements).forEach(([element, value]) => {
+            if (value && element in newPlayer.elements) {
+              newPlayer.elements[element as keyof Elements] += value;
+            }
+          });
+        }
         
-        // Add elemental resistance
-        Object.entries(eq.elementResistance).forEach(([element, value]) => {
-          if (value && element in newPlayer.elementResistance) {
-            newPlayer.elementResistance[element as keyof ElementResistance] += value;
-          }
-        });
+        // Add elemental resistance (half of element values)
+        if (eq.elements) {
+          Object.entries(eq.elements).forEach(([element, value]) => {
+            if (value && element in newPlayer.elementResistance) {
+              const resistanceValue = Math.floor(value / 2);
+              newPlayer.elementResistance[element as keyof ElementResistance] += resistanceValue;
+            }
+          });
+        }
       });
       
-      // Ensure current HP/MP don't exceed new max values
-      newPlayer.hp = Math.min(newPlayer.hp, newPlayer.maxHp);
-      newPlayer.mp = Math.min(newPlayer.mp, newPlayer.maxMp);
+      // Ensure current HP/MP don't exceed new max values, but also scale up if max increased
+      const hpRatio = prev.player.hp / prev.player.maxHp;
+      const mpRatio = prev.player.mp / prev.player.maxMp;
+      
+      // If max HP increased, scale current HP proportionally, otherwise cap at new max
+      if (newPlayer.maxHp > prev.player.maxHp) {
+        newPlayer.hp = Math.max(1, Math.floor(newPlayer.maxHp * hpRatio));
+      } else {
+        newPlayer.hp = Math.min(newPlayer.hp, newPlayer.maxHp);
+      }
+      
+      // If max MP increased, scale current MP proportionally, otherwise cap at new max
+      if (newPlayer.maxMp > prev.player.maxMp) {
+        newPlayer.mp = Math.max(1, Math.floor(newPlayer.maxMp * mpRatio));
+      } else {
+        newPlayer.mp = Math.min(newPlayer.mp, newPlayer.maxMp);
+      }
 
       const newState = {
         ...prev,
@@ -283,9 +309,23 @@ export const useShopInventory = (
         });
       });
       
-      // Ensure current HP/MP don't exceed new max values
-      newPlayer.hp = Math.min(newPlayer.hp, newPlayer.maxHp);
-      newPlayer.mp = Math.min(newPlayer.mp, newPlayer.maxMp);
+      // Ensure current HP/MP don't exceed new max values, but also scale up if max increased
+      const hpRatio = prev.player.hp / prev.player.maxHp;
+      const mpRatio = prev.player.mp / prev.player.maxMp;
+      
+      // If max HP increased, scale current HP proportionally, otherwise cap at new max
+      if (newPlayer.maxHp > prev.player.maxHp) {
+        newPlayer.hp = Math.max(1, Math.floor(newPlayer.maxHp * hpRatio));
+      } else {
+        newPlayer.hp = Math.min(newPlayer.hp, newPlayer.maxHp);
+      }
+      
+      // If max MP increased, scale current MP proportionally, otherwise cap at new max
+      if (newPlayer.maxMp > prev.player.maxMp) {
+        newPlayer.mp = Math.max(1, Math.floor(newPlayer.maxMp * mpRatio));
+      } else {
+        newPlayer.mp = Math.min(newPlayer.mp, newPlayer.maxMp);
+      }
 
       const newState = {
         ...prev,
