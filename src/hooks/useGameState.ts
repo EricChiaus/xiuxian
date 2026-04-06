@@ -15,7 +15,12 @@ const loadGame = () => {
 
 const saveGame = (state: GameState) => {
   try {
-    localStorage.setItem('xiuxian-save', JSON.stringify(state));
+    // Create a save state without shopItems (should be randomly generated)
+    const saveState = {
+      ...state,
+      shopItems: [] // Don't save shop items - they should be randomly generated
+    };
+    localStorage.setItem('xiuxian-save', JSON.stringify(saveState));
   } catch {
     // Silent fail
   }
